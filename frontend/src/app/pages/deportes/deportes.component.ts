@@ -29,7 +29,9 @@ export class DeportesComponent implements OnInit {
     address: '',
     matchDate: '',
     totalSlots: 10,
-    price: null
+    price: null,
+    latitude: null,
+    longitude: null
   };
 
   constructor(
@@ -81,18 +83,27 @@ export class DeportesComponent implements OnInit {
       const google = window.google;
       this.addressAutocomplete = new google.maps.places.Autocomplete(this.addressInput.nativeElement, {
         componentRestrictions: { country: 'pe' },
-        fields: ['formatted_address']
+        fields: ['formatted_address', 'geometry']
       });
       this.addressAutocomplete.addListener('place_changed', () => {
         const place = this.addressAutocomplete.getPlace();
         if (place?.formatted_address) {
           this.newMatch.address = place.formatted_address;
-          this.cdr.detectChanges();
         }
+        if (place?.geometry?.location) {
+          this.newMatch.latitude = place.geometry.location.lat();
+          this.newMatch.longitude = place.geometry.location.lng();
+        }
+        this.cdr.detectChanges();
       });
     } catch {
       // autocompletado no disponible; el campo sigue funcionando como texto libre
     }
+  }
+
+  onAddressTyped(): void {
+    this.newMatch.latitude = null;
+    this.newMatch.longitude = null;
   }
 
   createMatch(): void {
@@ -172,7 +183,9 @@ export class DeportesComponent implements OnInit {
       address: '',
       matchDate: '',
       totalSlots: 10,
-      price: null
+      price: null,
+      latitude: null,
+      longitude: null
     };
   }
 }

@@ -14,6 +14,8 @@ export interface MatchResponse {
   totalSlots: number;
   availableSlots: number;
   price: number | null;
+  latitude: number | null;
+  longitude: number | null;
   status: string;
   participantIds: number[];
 }
@@ -27,6 +29,8 @@ export interface CreateMatchRequest {
   matchDate: string;
   totalSlots: number;
   price: number | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 @Injectable({ providedIn: 'root' })

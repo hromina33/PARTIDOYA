@@ -34,6 +34,8 @@ public final class MatchPersistenceAssembler {
                 new MatchDate(entity.getMatchDate()),
                 new TotalSlots(entity.getTotalSlots()),
                 new MatchPrice(entity.getPrice()),
+                entity.getLatitude(),
+                entity.getLongitude(),
                 MatchStatus.valueOf(entity.getStatus()),
                 participants);
     }
@@ -52,6 +54,8 @@ public final class MatchPersistenceAssembler {
         entity.setMatchDate(match.getMatchDate().value());
         entity.setTotalSlots(match.getTotalSlots().value());
         entity.setPrice(match.getPrice() != null ? match.getPrice().value() : null);
+        entity.setLatitude(match.getLatitude());
+        entity.setLongitude(match.getLongitude());
         entity.setStatus(match.getStatus().name());
         var participantIds = new ArrayList<>(match.getParticipants().stream()
                 .map(UserId::value)

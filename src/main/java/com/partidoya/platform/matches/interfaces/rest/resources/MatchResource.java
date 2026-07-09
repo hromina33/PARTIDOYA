@@ -13,6 +13,8 @@ public record MatchResource(
         int totalSlots,
         int availableSlots,
         Double price,
+        Double latitude,
+        Double longitude,
         String status,
         List<Long> participantIds) {
 }

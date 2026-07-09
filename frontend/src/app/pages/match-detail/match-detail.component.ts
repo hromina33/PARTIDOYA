@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatchService, MatchResponse } from '../../shared/services/match.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { MapsLoaderService } from '../../shared/services/maps-loader.service';
+import { GeolocationService } from '../../shared/services/geolocation.service';
 
 @Component({
   selector: 'app-match-detail',
@@ -27,6 +28,7 @@ export class MatchDetailComponent implements OnInit {
     private matchService: MatchService,
     private authService: AuthService,
     private mapsLoader: MapsLoaderService,
+    private geolocation: GeolocationService,
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef
@@ -88,27 +90,13 @@ export class MatchDetailComponent implements OnInit {
   private async initMap(): Promise<void> {
     try {
       await this.mapsLoader.load();
-      const position = await this.getUserPosition();
+      const position = await this.geolocation.getPosition();
       this.renderDirections(position);
     } catch (err: any) {
       this.mapLoading = false;
       this.mapError = err?.message || 'No se pudo cargar el mapa.';
       this.cdr.detectChanges();
     }
-  }
-
-  private getUserPosition(): Promise<GeolocationPosition> {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error('Tu navegador no soporta geolocalización.'));
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        resolve,
-        () => reject(new Error('Activa el permiso de ubicación para ver la ruta.')),
-        { timeout: 8000 }
-      );
-    });
   }
 
   private renderDirections(position: GeolocationPosition): void {

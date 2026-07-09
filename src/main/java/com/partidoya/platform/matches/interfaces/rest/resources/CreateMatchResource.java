@@ -8,5 +8,7 @@ public record CreateMatchResource(
         String address,
         String matchDate,
         int totalSlots,
-        Double price) {
+        Double price,
+        Double latitude,
+        Double longitude) {
 }

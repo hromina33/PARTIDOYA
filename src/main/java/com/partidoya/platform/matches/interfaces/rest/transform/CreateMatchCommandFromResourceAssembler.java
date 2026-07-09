@@ -27,6 +27,8 @@ public final class CreateMatchCommandFromResourceAssembler {
                 new Location(resource.address()),
                 new MatchDate(LocalDateTime.parse(resource.matchDate())),
                 new TotalSlots(resource.totalSlots()),
-                new MatchPrice(resource.price() != null ? BigDecimal.valueOf(resource.price()) : null));
+                new MatchPrice(resource.price() != null ? BigDecimal.valueOf(resource.price()) : null),
+                resource.latitude(),
+                resource.longitude());
     }
 }

@@ -19,7 +19,9 @@ public record CreateMatchCommand(
         Location address,
         MatchDate matchDate,
         TotalSlots totalSlots,
-        MatchPrice price) {
+        MatchPrice price,
+        Double latitude,
+        Double longitude) {
     public CreateMatchCommand {
         Objects.requireNonNull(organizerId, "organizerId cannot be null");
         Objects.requireNonNull(sport, "sport cannot be null");

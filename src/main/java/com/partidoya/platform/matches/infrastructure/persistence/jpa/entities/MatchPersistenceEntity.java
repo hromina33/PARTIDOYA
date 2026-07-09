@@ -47,6 +47,10 @@ public class MatchPersistenceEntity extends AuditableAbstractPersistenceEntity {
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
+    private Double latitude;
+
+    private Double longitude;
+
     @Column(nullable = false, length = 20)
     private String status;
 

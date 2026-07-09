@@ -29,6 +29,8 @@ public class Match {
     private MatchDate matchDate;
     private TotalSlots totalSlots;
     private MatchPrice price;
+    private Double latitude;
+    private Double longitude;
     private MatchStatus status;
     private List<UserId> participants;
 
@@ -36,7 +38,8 @@ public class Match {
     }
 
     public Match(UserId organizerId, String sport, MatchTitle title, MatchDescription description,
-                 Location address, MatchDate matchDate, TotalSlots totalSlots, MatchPrice price) {
+                 Location address, MatchDate matchDate, TotalSlots totalSlots, MatchPrice price,
+                 Double latitude, Double longitude) {
         this.organizerId = Objects.requireNonNull(organizerId, "organizerId must not be null");
         this.sport = Objects.requireNonNull(sport, "sport must not be null");
         this.title = Objects.requireNonNull(title, "title must not be null");
@@ -45,19 +48,22 @@ public class Match {
         this.matchDate = Objects.requireNonNull(matchDate, "matchDate must not be null");
         this.totalSlots = Objects.requireNonNull(totalSlots, "totalSlots must not be null");
         this.price = price;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.status = MatchStatus.OPEN;
         this.participants = new ArrayList<>();
     }
 
     public Match(CreateMatchCommand command) {
         this(command.organizerId(), command.sport(), command.title(), command.description(),
-                command.address(), command.matchDate(), command.totalSlots(), command.price());
+                command.address(), command.matchDate(), command.totalSlots(), command.price(),
+                command.latitude(), command.longitude());
     }
 
     public Match(MatchId id, UserId organizerId, String sport, MatchTitle title, MatchDescription description,
-                 Location address, MatchDate matchDate, TotalSlots totalSlots, MatchPrice price, MatchStatus status,
-                 List<UserId> participants) {
-        this(organizerId, sport, title, description, address, matchDate, totalSlots, price);
+                 Location address, MatchDate matchDate, TotalSlots totalSlots, MatchPrice price,
+                 Double latitude, Double longitude, MatchStatus status, List<UserId> participants) {
+        this(organizerId, sport, title, description, address, matchDate, totalSlots, price, latitude, longitude);
         this.id = Objects.requireNonNull(id, "id must not be null");
         this.status = status;
         this.participants = participants != null ? new ArrayList<>(participants) : new ArrayList<>();

@@ -23,6 +23,8 @@ public final class MatchResourceFromEntityAssembler {
                 match.getPrice() != null && match.getPrice().value() != null
                         ? match.getPrice().value().doubleValue()
                         : null,
+                match.getLatitude(),
+                match.getLongitude(),
                 match.getStatus().name(),
                 match.getParticipants().stream().map(UserId::value).toList());
     }
