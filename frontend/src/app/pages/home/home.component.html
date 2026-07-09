@@ -166,7 +166,7 @@
         </div>
         <div class="scroll-row">
           @for (match of nearbyMatches; track match.id) {
-            <div class="mini-card">
+            <a [routerLink]="['/partidos', match.id]" class="mini-card">
               <div class="mini-card-img mini-{{ match.sport.toLowerCase() }}">
                 <div class="mini-card-overlay"></div>
                 <span class="mini-sport">{{ match.sport }}</span>
@@ -180,14 +180,14 @@
                 <div class="mini-bottom">
                   <span class="mini-slots">{{ match.totalSlots - match.availableSlots }}/{{ match.totalSlots }}</span>
                   @if (!hasJoined(match) && match.availableSlots > 0) {
-                    <button class="btn-mini" (click)="joinMatch(match.id)">Unirme</button>
+                    <button class="btn-mini" (click)="$event.preventDefault(); $event.stopPropagation(); joinMatch(match.id)">Unirme</button>
                   }
                   @if (hasJoined(match)) {
                     <span class="badge-mini">Inscrito</span>
                   }
                 </div>
               </div>
-            </div>
+            </a>
           }
         </div>
       </div>
@@ -202,7 +202,7 @@
         </div>
         <div class="scroll-row">
           @for (match of upcomingMatches; track match.id) {
-            <div class="mini-card">
+            <a [routerLink]="['/partidos', match.id]" class="mini-card">
               <div class="mini-card-img mini-{{ match.sport.toLowerCase() }}">
                 <div class="mini-card-overlay"></div>
                 <span class="mini-sport">{{ match.sport }}</span>
@@ -216,14 +216,14 @@
                 <div class="mini-bottom">
                   <span class="mini-slots">{{ match.totalSlots - match.availableSlots }}/{{ match.totalSlots }}</span>
                   @if (!hasJoined(match) && match.availableSlots > 0) {
-                    <button class="btn-mini" (click)="joinMatch(match.id)">Unirme</button>
+                    <button class="btn-mini" (click)="$event.preventDefault(); $event.stopPropagation(); joinMatch(match.id)">Unirme</button>
                   }
                   @if (hasJoined(match)) {
                     <span class="badge-mini">Inscrito</span>
                   }
                 </div>
               </div>
-            </div>
+            </a>
           }
         </div>
       </div>
