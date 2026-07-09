@@ -124,6 +124,7 @@ export class MatchDetailComponent implements OnInit {
       zoom: 13,
       disableDefaultUI: true,
       zoomControl: true,
+      zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_TOP },
       styles: DARK_MAP_STYLE
     });
 
