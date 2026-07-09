@@ -168,10 +168,34 @@
   transition: border-color 0.25s, box-shadow 0.25s;
 }
 
-// --- Create Form ---
+// --- Create Form (liquid glass) ---
 .create-form-card {
+  position: relative;
   padding: 2rem;
   margin-bottom: 2rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03) 45%, rgba(255, 255, 255, 0.07));
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 22px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 0 40px rgba(255, 255, 255, 0.02),
+    0 28px 56px -24px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 60% at 88% -10%, rgba(198, 241, 53, 0.14), transparent 60%);
+    pointer-events: none;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   h2 {
     font-size: 1.125rem;
@@ -203,13 +227,16 @@
 
   input, select {
     padding: 0.625rem 0.875rem;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
     color: #fff;
     font-size: 0.875rem;
     font-family: inherit;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 
     &::placeholder {
       color: rgba(255, 255, 255, 0.3);
@@ -218,6 +245,7 @@
     &:focus {
       outline: none;
       border-color: #c6f135;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 3px rgba(198, 241, 53, 0.15);
     }
 
     option {
@@ -228,19 +256,26 @@
 }
 
 .btn-submit {
+  position: relative;
   margin-top: 0.5rem;
   padding: 0.75rem 2rem;
   border-radius: 50px;
   border: none;
-  background: #c6f135;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.45), transparent 55%), #c6f135;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 10px 24px -10px rgba(198, 241, 53, 0.45);
   color: #0a0f1a;
   font-size: 0.9375rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: transform 0.15s, box-shadow 0.2s;
 
   &:hover {
-    background: #d4f75a;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 14px 30px -10px rgba(198, 241, 53, 0.55);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 
