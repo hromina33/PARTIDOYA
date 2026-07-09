@@ -18,12 +18,10 @@ export class MatchDetailComponent implements OnInit {
   loading = true;
   errorMessage = '';
 
-  showMap = false;
   mapLoading = false;
   mapError = '';
   routeDuration = '';
   routeDistance = '';
-  private mapRendered = false;
 
   constructor(
     private matchService: MatchService,
@@ -48,7 +46,9 @@ export class MatchDetailComponent implements OnInit {
       next: (data) => {
         this.match = data;
         this.loading = false;
+        this.mapLoading = true;
         this.cdr.detectChanges();
+        setTimeout(() => this.initMap(), 0);
       },
       error: () => {
         this.errorMessage = 'Partido no encontrado.';
@@ -83,15 +83,6 @@ export class MatchDetailComponent implements OnInit {
   get googleMapsUrl(): string {
     if (!this.match) return '#';
     return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(this.match.address)}`;
-  }
-
-  toggleComoLlegar(): void {
-    this.showMap = !this.showMap;
-    if (this.showMap && !this.mapRendered) {
-      this.mapError = '';
-      this.mapLoading = true;
-      setTimeout(() => this.initMap(), 0);
-    }
   }
 
   private async initMap(): Promise<void> {
@@ -156,7 +147,6 @@ export class MatchDetailComponent implements OnInit {
           const leg = result.routes[0].legs[0];
           this.routeDuration = leg.duration.text;
           this.routeDistance = leg.distance.text;
-          this.mapRendered = true;
         } else {
           this.mapError = 'No se pudo calcular la ruta a la cancha.';
         }
