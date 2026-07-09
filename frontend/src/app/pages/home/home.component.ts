@@ -26,7 +26,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     { title: 'Nuevas canchas disponibles', subtitle: 'Se sumaron 5 canchas sintéticas en Lima Norte. Reserva ahora.', cta: 'Explorar', theme: 'banner-purple' },
     { title: 'Invita y gana', subtitle: 'Invita a un amigo y ambos reciben 1 mes de Jugador Plus gratis.', cta: 'Invitar amigos', theme: 'banner-blue' },
   ];
-  currentBanner = 0;
+  currentBanner = 3;
   private bannerTimer: ReturnType<typeof setInterval> | null = null;
 
   tickerItems = [
@@ -103,7 +103,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.ngZone.run(() => {
         this.nextBanner();
       });
-    }, 1500);
+    }, 5000);
   }
 
   stopAutoplay(): void {
