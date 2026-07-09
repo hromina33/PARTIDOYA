@@ -23,7 +23,7 @@ export class MapsLoaderService {
       }
 
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsApiKey}&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsApiKey}&libraries=places&language=es&region=PE`;
       script.async = true;
       script.defer = true;
       script.onload = () => resolve();
