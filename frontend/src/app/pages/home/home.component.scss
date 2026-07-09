@@ -569,23 +569,6 @@
   }
 }
 
-.section-heading {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-}
-
-.section-badge {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #c6f135;
-  background: rgba(198, 241, 53, 0.12);
-  border: 1px solid rgba(198, 241, 53, 0.3);
-  padding: 0.2rem 0.625rem;
-  border-radius: 50px;
-}
 
 .section-link {
   font-size: 0.875rem;

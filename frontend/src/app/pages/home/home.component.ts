@@ -17,8 +17,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   userName: string | null = null;
   upcomingMatches: MatchResponse[] = [];
   almostFullMatches: MatchResponse[] = [];
-  showingNearby = false;
-  private allMatches: MatchResponse[] = [];
+  nearbyMatches: MatchResponse[] = [];
 
   banners = [
     { title: 'Pichanga Relámpago', subtitle: 'Fútbol 7 este sábado a las 4pm — ¡últimos 3 cupos!', cta: 'Ver partido', theme: 'banner-green' },
@@ -51,39 +50,31 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.userName = this.authService.getUserName();
     this.matchService.getOpenMatches().subscribe({
       next: (matches) => {
-        this.allMatches = matches;
-        this.applyMatches(matches);
-        this.filterByLocation();
+        const sorted = [...matches].sort((a, b) =>
+          new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime()
+        );
+        this.upcomingMatches = sorted.slice(0, 4);
+        this.almostFullMatches = matches
+          .filter(m => m.availableSlots > 0 && m.availableSlots <= 3)
+          .slice(0, 4);
+        this.cdr.detectChanges();
+        this.loadNearbyMatches(sorted);
       }
     });
     this.startAutoplay();
   }
 
-  private applyMatches(matches: MatchResponse[]): void {
-    const sorted = [...matches].sort((a, b) =>
-      new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime()
-    );
-    this.upcomingMatches = sorted.slice(0, 4);
-    this.almostFullMatches = matches
-      .filter(m => m.availableSlots > 0 && m.availableSlots <= 3)
-      .slice(0, 4);
-    this.cdr.detectChanges();
-  }
-
-  private async filterByLocation(): Promise<void> {
+  private async loadNearbyMatches(matches: MatchResponse[]): Promise<void> {
     try {
       const position = await this.geolocation.getPosition();
       const { latitude, longitude } = position.coords;
-      const nearby = this.allMatches
+      this.nearbyMatches = matches
         .filter(m => m.latitude !== null && m.longitude !== null)
-        .filter(m => this.geolocation.distanceKm(latitude, longitude, m.latitude!, m.longitude!) <= NEARBY_RADIUS_KM);
-
-      if (nearby.length > 0) {
-        this.showingNearby = true;
-        this.applyMatches(nearby);
-      }
+        .filter(m => this.geolocation.distanceKm(latitude, longitude, m.latitude!, m.longitude!) <= NEARBY_RADIUS_KM)
+        .slice(0, 6);
+      this.cdr.detectChanges();
     } catch {
-      // ubicación no disponible: se mantiene la lista sin filtrar
+      // ubicación no disponible: la sección "Cerca de ti" simplemente no se muestra
     }
   }
 
