@@ -41,15 +41,19 @@
   padding: 2rem 0 4rem;
   background: #0a0f1a;
   color: #fff;
+  overflow-x: hidden;
 }
 
 // --- Banner Carousel ---
 .banner-carousel {
   position: relative;
-  border-radius: 20px;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  border-radius: 0;
   overflow: hidden;
   margin-bottom: 1.5rem;
-  height: clamp(300px, 28vw, 420px);
+  height: clamp(340px, 33vw, 560px);
 }
 
 .banner-slide {
@@ -69,42 +73,25 @@
     visibility: visible;
     z-index: 1;
   }
-
-  &::after {
-    content: '';
-    position: absolute;
-    right: -40px;
-    top: -40px;
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  &::before {
-    content: '';
-    position: absolute;
-    right: 60px;
-    bottom: -60px;
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.04);
-  }
 }
 
 .banner-green { background: linear-gradient(135deg, #1B5E20 0%, #43A047 100%); }
-.banner-orange { background: linear-gradient(135deg, #E65100 0%, #FF8F00 100%); }
-.banner-purple { background: linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%); }
+.banner-orange {
+  background:
+    linear-gradient(90deg, #361400e0, #6f3000a3 40%, #6f30001a 74%),
+    url('../../../assets/images/torneo-express-hero.png') center / cover no-repeat;
+}
+
+.banner-purple {
+  background:
+    linear-gradient(90deg, #140630e6, #34125ea3 40%, #34125e14 74%),
+    url('../../../assets/images/nuevas-canchas-hero.png') center / cover no-repeat;
+}
+
 .banner-blue {
   background:
-    linear-gradient(90deg, rgba(3, 18, 48, 0.92) 0%, rgba(3, 18, 48, 0.65) 38%, rgba(3, 18, 48, 0.08) 72%),
-    url('../../../assets/images/invita-y-gana-hero.png') center center / cover no-repeat;
-
-  &::before,
-  &::after {
-    display: none;
-  }
+    linear-gradient(90deg, #031230eb, #031230a6 38%, #03123014 72%),
+    url('../../../assets/images/invita-y-gana-hero.png') center / cover no-repeat;
 }
 
 .banner-content {
@@ -751,7 +738,6 @@
 
   .banner-carousel {
     height: 260px;
-    border-radius: 14px;
   }
 
   .banner-slide {
@@ -825,7 +811,6 @@
 
   .banner-carousel {
     height: 220px;
-    border-radius: 12px;
     margin-bottom: 1rem;
   }
 
