@@ -67,6 +67,7 @@ export class DeportesComponent implements OnInit {
 
   toggleCreateForm(): void {
     this.showCreateForm = !this.showCreateForm;
+    this.errorMessage = '';
     if (this.showCreateForm) {
       this.newMatch.organizerId = this.authService.getUserId() || 0;
       this.newMatch.sport = this.sportFilter;

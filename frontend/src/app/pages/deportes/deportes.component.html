@@ -28,7 +28,12 @@
     </div>
 
     @if (errorMessage) {
-      <div class="error-banner">{{ errorMessage }}</div>
+      <div class="error-banner">
+        <span>{{ errorMessage }}</span>
+        <button type="button" class="error-banner-close" (click)="errorMessage = ''" aria-label="Cerrar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
     }
 
     @if (showCreateForm && isAdminCancha) {

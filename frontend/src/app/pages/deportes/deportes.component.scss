@@ -149,6 +149,10 @@
 
 // --- Error ---
 .error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   background: rgba(220, 38, 38, 0.15);
   border: 1px solid rgba(220, 38, 38, 0.4);
   color: #fca5a5;
@@ -156,6 +160,25 @@
   border-radius: 12px;
   margin-bottom: 1.5rem;
   font-size: 0.875rem;
+}
+
+.error-banner-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
 }
 
 // --- Glass Card ---
