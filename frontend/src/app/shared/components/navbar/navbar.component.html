@@ -10,8 +10,23 @@
     </div>
     <div class="navbar-actions">
       @if (isLoggedIn) {
-        <a routerLink="/mi-perfil" class="navbar-user">{{ userName }}</a>
-        <button class="btn btn-outline btn-sm" (click)="logout()">Cerrar sesion</button>
+        <div class="user-menu">
+          <button
+            type="button"
+            class="navbar-user"
+            [class.active]="userMenuOpen"
+            (click)="toggleUserMenu()"
+            aria-haspopup="menu"
+            [attr.aria-expanded]="userMenuOpen">
+            {{ userName }}
+          </button>
+          @if (userMenuOpen) {
+            <div class="user-dropdown" role="menu">
+              <a routerLink="/mi-perfil" class="dropdown-item" role="menuitem" (click)="closeUserMenu()">Mi perfil</a>
+              <button type="button" class="dropdown-item" role="menuitem" (click)="logout()">Cerrar sesion</button>
+            </div>
+          }
+        </div>
       } @else {
         <a routerLink="/login" class="btn btn-outline btn-sm">Iniciar sesion</a>
         <a routerLink="/register" class="btn btn-primary btn-sm">Crear cuenta</a>

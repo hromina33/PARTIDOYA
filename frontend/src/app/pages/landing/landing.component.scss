@@ -147,6 +147,7 @@
 .pricing {
   padding: 5rem 0;
   background: #0a0f1a;
+  overflow-x: hidden;
 }
 
 .pricing-badge-top {
@@ -173,9 +174,43 @@
   margin-bottom: 3rem;
 }
 
+.pricing-groups {
+  display: grid;
+  gap: 2rem;
+}
+
+.pricing-group {
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.pricing-group-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  h3 {
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 800;
+  }
+}
+
+.pricing-group-kicker {
+  color: #c6f135;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
 .pricing-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.25rem;
   align-items: stretch;
 }
@@ -422,13 +457,88 @@
   line-height: 1;
 }
 
+@media (max-width: 1024px) {
+  .hero {
+    padding: 6rem 0 5rem;
+  }
+
+  .hero-inner {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+
+  .hero-title {
+    font-size: 2.75rem;
+  }
+
+  .features-grid {
+    gap: 1rem;
+  }
+
+  .feature-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-inner {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .hero-title {
+    font-size: 2.35rem;
+  }
+
+  .pricing {
+    padding: 3.5rem 0;
+  }
+
+  .section-subtitle {
+    margin-top: -1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .pricing-group {
+    padding: 1rem;
+  }
+
+  .pricing-group-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 600px) {
   .hero {
     padding: 3rem 0;
   }
 
+  .hero-inner {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
   .hero-title {
     font-size: 2rem;
+  }
+
+  .hero-bullets li {
+    font-size: 0.95rem;
+  }
+
+  .section-title {
+    font-size: 1.45rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.95rem;
   }
 
   .features-grid {
@@ -436,6 +546,20 @@
   }
 
   .pricing-cards {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-group {
+    border-radius: 14px;
+  }
+
+  .card-top,
+  .card-bottom {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .price-amount {
+    font-size: 2.75rem;
   }
 }

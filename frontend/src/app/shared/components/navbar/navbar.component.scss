@@ -11,6 +11,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
 }
 
 .navbar-brand {
@@ -23,6 +24,8 @@
 .navbar-links {
   display: flex;
   gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .nav-link {
@@ -40,16 +43,57 @@
   display: flex;
   gap: 0.75rem;
   align-items: center;
+  flex-shrink: 0;
+}
+
+.user-menu {
+  position: relative;
 }
 
 .navbar-user {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
   transition: color 0.2s;
+  padding: 0.5rem 0;
+
+  &:hover,
+  &.active {
+    color: #c6f135;
+  }
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 0.65rem);
+  right: 0;
+  min-width: 160px;
+  padding: 0.4rem;
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  z-index: 120;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
 
   &:hover {
+    background: rgba(198, 241, 53, 0.12);
     color: #c6f135;
   }
 }
@@ -57,4 +101,56 @@
 .btn-sm {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0.65rem 0;
+  }
+
+  .navbar-inner {
+    flex-wrap: wrap;
+  }
+
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+
+  .navbar-links {
+    order: 3;
+    width: 100%;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-top: 0.35rem;
+  }
+
+  .nav-link {
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .navbar-actions {
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+
+  .btn-sm {
+    padding: 0.45rem 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-inner {
+    align-items: flex-start;
+  }
+
+  .navbar-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .user-dropdown {
+    right: 0;
+  }
 }
