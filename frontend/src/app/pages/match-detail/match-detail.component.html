@@ -32,9 +32,15 @@
             <span class="info-card-label">Fecha y hora</span>
             <span class="info-card-value">{{ formatDate(match.matchDate) }}</span>
           </div>
-          <div class="info-card glass-card">
-            <span class="info-card-label">Lugar</span>
-            <span class="info-card-value">{{ match.address }}</span>
+          <div class="info-card glass-card lugar-card">
+            <div class="lugar-text">
+              <span class="info-card-label">Lugar</span>
+              <span class="info-card-value">{{ match.address }}</span>
+            </div>
+            <button class="btn-como-llegar" [class.is-active]="showMap" (click)="toggleComoLlegar()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-8-8 18-2.5-7L3 11z" fill="currentColor"/></svg>
+              {{ showMap ? 'Ocultar ruta' : 'Cómo llegar' }}
+            </button>
           </div>
           <div class="info-card glass-card">
             <span class="info-card-label">Organizador</span>
@@ -51,6 +57,33 @@
             </div>
           }
         </div>
+
+        @if (showMap) {
+          <div class="map-panel glass-card">
+            <div class="map-side">
+              <div>
+                <span class="map-side-label">Ruta a la cancha</span>
+                <div class="dest-name">{{ match.title }}</div>
+                <div class="dest-addr">{{ match.address }}</div>
+              </div>
+              @if (mapLoading) {
+                <p class="map-status">Calculando ruta...</p>
+              }
+              @if (mapError) {
+                <p class="map-status map-status-error">{{ mapError }}</p>
+              }
+              @if (!mapLoading && !mapError && routeDuration) {
+                <div class="eta-row">
+                  <span class="eta-time">{{ routeDuration }}</span>
+                  <span class="eta-dist">· {{ routeDistance }}</span>
+                </div>
+              }
+              <div class="map-side-spacer"></div>
+              <a class="btn-ghost-map" [href]="googleMapsUrl" target="_blank" rel="noopener">Abrir en Google Maps</a>
+            </div>
+            <div class="map-canvas" #mapContainer></div>
+          </div>
+        }
 
         <div class="slots-section">
           <div class="slots-bar">

@@ -1,8 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatchService, MatchResponse } from '../../shared/services/match.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { MapsLoaderService } from '../../shared/services/maps-loader.service';
 
 @Component({
   selector: 'app-match-detail',
@@ -11,13 +12,23 @@ import { AuthService } from '../../shared/services/auth.service';
   styleUrl: './match-detail.component.scss'
 })
 export class MatchDetailComponent implements OnInit {
+  @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
+
   match: MatchResponse | null = null;
   loading = true;
   errorMessage = '';
 
+  showMap = false;
+  mapLoading = false;
+  mapError = '';
+  routeDuration = '';
+  routeDistance = '';
+  private mapRendered = false;
+
   constructor(
     private matchService: MatchService,
     private authService: AuthService,
+    private mapsLoader: MapsLoaderService,
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef
@@ -67,6 +78,91 @@ export class MatchDetailComponent implements OnInit {
 
   get canCancel(): boolean {
     return !!this.match && this.match.status === 'OPEN' && new Date(this.match.matchDate) > new Date();
+  }
+
+  get googleMapsUrl(): string {
+    if (!this.match) return '#';
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(this.match.address)}`;
+  }
+
+  toggleComoLlegar(): void {
+    this.showMap = !this.showMap;
+    if (this.showMap && !this.mapRendered) {
+      this.mapError = '';
+      this.mapLoading = true;
+      setTimeout(() => this.initMap(), 0);
+    }
+  }
+
+  private async initMap(): Promise<void> {
+    try {
+      await this.mapsLoader.load();
+      const position = await this.getUserPosition();
+      this.renderDirections(position);
+    } catch (err: any) {
+      this.mapLoading = false;
+      this.mapError = err?.message || 'No se pudo cargar el mapa.';
+      this.cdr.detectChanges();
+    }
+  }
+
+  private getUserPosition(): Promise<GeolocationPosition> {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Tu navegador no soporta geolocalización.'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        resolve,
+        () => reject(new Error('Activa el permiso de ubicación para ver la ruta.')),
+        { timeout: 8000 }
+      );
+    });
+  }
+
+  private renderDirections(position: GeolocationPosition): void {
+    if (!this.match || !this.mapContainer) {
+      this.mapLoading = false;
+      return;
+    }
+    const google = window.google;
+    const origin = { lat: position.coords.latitude, lng: position.coords.longitude };
+
+    const map = new google.maps.Map(this.mapContainer.nativeElement, {
+      center: origin,
+      zoom: 13,
+      disableDefaultUI: true,
+      zoomControl: true,
+      styles: DARK_MAP_STYLE
+    });
+
+    const directionsService = new google.maps.DirectionsService();
+    const directionsRenderer = new google.maps.DirectionsRenderer({
+      map,
+      suppressMarkers: false,
+      polylineOptions: { strokeColor: '#c6f135', strokeWeight: 5 }
+    });
+
+    directionsService.route(
+      {
+        origin,
+        destination: this.match.address,
+        travelMode: google.maps.TravelMode.DRIVING
+      },
+      (result: any, status: string) => {
+        this.mapLoading = false;
+        if (status === 'OK') {
+          directionsRenderer.setDirections(result);
+          const leg = result.routes[0].legs[0];
+          this.routeDuration = leg.duration.text;
+          this.routeDistance = leg.distance.text;
+          this.mapRendered = true;
+        } else {
+          this.mapError = 'No se pudo calcular la ruta a la cancha.';
+        }
+        this.cdr.detectChanges();
+      }
+    );
   }
 
   joinMatch(): void {
@@ -133,3 +229,17 @@ export class MatchDetailComponent implements OnInit {
     return labels[status] || status;
   }
 }
+
+const DARK_MAP_STYLE = [
+  { elementType: 'geometry', stylers: [{ color: '#0c1120' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: 'rgba(255,255,255,0.55)' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0c1120' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2a3350' }] },
+  { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#2a3350' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#39456b' }] },
+  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#141a2c' }] },
+  { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0a0f1a' }] },
+  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: 'rgba(255,255,255,0.08)' }] }
+];

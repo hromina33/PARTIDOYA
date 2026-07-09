@@ -103,3 +103,42 @@ button {
     color: #fff;
   }
 }
+
+// Google Places autocomplete dropdown (appended to <body>, styled globally to match app theme)
+.pac-container {
+  background-color: #131a2c;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-top: 4px;
+  font-family: var(--font-family);
+  box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.6);
+}
+
+.pac-item {
+  padding: 0.6rem 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.875rem;
+}
+
+.pac-item:first-child {
+  border-top: none;
+}
+
+.pac-item:hover,
+.pac-item-selected {
+  background-color: rgba(198, 241, 53, 0.1);
+}
+
+.pac-icon {
+  filter: invert(1) brightness(0.8);
+}
+
+.pac-item-query {
+  color: #fff;
+  font-weight: 600;
+}
+
+.pac-matched {
+  color: #c6f135;
+}

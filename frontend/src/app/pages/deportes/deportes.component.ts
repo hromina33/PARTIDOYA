@@ -1,9 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { MatchService, MatchResponse, CreateMatchRequest } from '../../shared/services/match.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { MapsLoaderService } from '../../shared/services/maps-loader.service';
 
 @Component({
   selector: 'app-deportes',
@@ -12,10 +13,13 @@ import { AuthService } from '../../shared/services/auth.service';
   styleUrl: './deportes.component.scss'
 })
 export class DeportesComponent implements OnInit {
+  @ViewChild('addressInput') addressInput?: ElementRef<HTMLInputElement>;
+
   matches: MatchResponse[] = [];
   sportFilter = 'Fútbol';
   showCreateForm = false;
   errorMessage = '';
+  private addressAutocomplete: any = null;
 
   newMatch: CreateMatchRequest = {
     organizerId: 0,
@@ -31,6 +35,7 @@ export class DeportesComponent implements OnInit {
   constructor(
     private matchService: MatchService,
     private authService: AuthService,
+    private mapsLoader: MapsLoaderService,
     private router: Router,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
@@ -63,6 +68,30 @@ export class DeportesComponent implements OnInit {
     if (this.showCreateForm) {
       this.newMatch.organizerId = this.authService.getUserId() || 0;
       this.newMatch.sport = this.sportFilter;
+      setTimeout(() => this.initAddressAutocomplete(), 0);
+    } else {
+      this.addressAutocomplete = null;
+    }
+  }
+
+  private async initAddressAutocomplete(): Promise<void> {
+    if (!this.addressInput || this.addressAutocomplete) return;
+    try {
+      await this.mapsLoader.load();
+      const google = window.google;
+      this.addressAutocomplete = new google.maps.places.Autocomplete(this.addressInput.nativeElement, {
+        componentRestrictions: { country: 'pe' },
+        fields: ['formatted_address']
+      });
+      this.addressAutocomplete.addListener('place_changed', () => {
+        const place = this.addressAutocomplete.getPlace();
+        if (place?.formatted_address) {
+          this.newMatch.address = place.formatted_address;
+          this.cdr.detectChanges();
+        }
+      });
+    } catch {
+      // autocompletado no disponible; el campo sigue funcionando como texto libre
     }
   }
 
@@ -71,6 +100,7 @@ export class DeportesComponent implements OnInit {
     this.matchService.createMatch(this.newMatch).subscribe({
       next: () => {
         this.showCreateForm = false;
+        this.addressAutocomplete = null;
         this.resetNewMatch();
         this.loadMatches();
       },

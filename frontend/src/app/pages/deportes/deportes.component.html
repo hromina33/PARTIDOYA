@@ -54,7 +54,7 @@
           <div class="form-row">
             <div class="form-group">
               <label for="address">Direccion</label>
-              <input id="address" type="text" [(ngModel)]="newMatch.address" name="address" placeholder="Ej: Parque Kennedy, Miraflores" required>
+              <input id="address" #addressInput type="text" [(ngModel)]="newMatch.address" name="address" placeholder="Empieza a escribir una direccion..." autocomplete="off" required>
             </div>
             <div class="form-group">
               <label for="matchDate">Fecha y hora</label>
