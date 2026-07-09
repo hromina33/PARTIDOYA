@@ -18,6 +18,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   upcomingMatches: MatchResponse[] = [];
   almostFullMatches: MatchResponse[] = [];
   nearbyMatches: MatchResponse[] = [];
+  joinedMatches: MatchResponse[] = [];
 
   banners = [
     { title: 'Pichanga Relámpago', subtitle: 'Fútbol 7 este sábado a las 4pm — ¡últimos 3 cupos!', cta: 'Ver partido', theme: 'banner-green' },
@@ -61,7 +62,21 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.loadNearbyMatches(sorted);
       }
     });
+    this.loadJoinedMatches();
     this.startAutoplay();
+  }
+
+  private loadJoinedMatches(): void {
+    const userId = this.authService.getUserId();
+    if (!userId) return;
+    this.matchService.getMatchesByParticipant(userId).subscribe({
+      next: (matches) => {
+        this.joinedMatches = [...matches]
+          .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime())
+          .slice(0, 6);
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   private async loadNearbyMatches(matches: MatchResponse[]): Promise<void> {
