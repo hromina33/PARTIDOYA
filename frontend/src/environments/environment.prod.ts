@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://REPLACE-WITH-RAILWAY-URL.up.railway.app/api/v1'
+  apiUrl: 'https://partidoya-production.up.railway.app/api/v1'
 };
