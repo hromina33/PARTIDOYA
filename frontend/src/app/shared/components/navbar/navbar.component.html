@@ -1,0 +1,21 @@
+<nav class="navbar">
+  <div class="container navbar-inner">
+    <a routerLink="/" class="navbar-brand">PartidoYA</a>
+    <div class="navbar-links">
+      <a routerLink="/home" class="nav-link">Inicio</a>
+      <a routerLink="/deportes" class="nav-link">Deportes</a>
+      @if (isLoggedIn) {
+        <a routerLink="/mis-partidos" class="nav-link">Mis Partidos</a>
+      }
+    </div>
+    <div class="navbar-actions">
+      @if (isLoggedIn) {
+        <a routerLink="/mi-perfil" class="navbar-user">{{ userName }}</a>
+        <button class="btn btn-outline btn-sm" (click)="logout()">Cerrar sesion</button>
+      } @else {
+        <a routerLink="/login" class="btn btn-outline btn-sm">Iniciar sesion</a>
+        <a routerLink="/register" class="btn btn-primary btn-sm">Crear cuenta</a>
+      }
+    </div>
+  </div>
+</nav>

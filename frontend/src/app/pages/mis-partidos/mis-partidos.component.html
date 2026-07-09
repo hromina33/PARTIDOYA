@@ -1,0 +1,90 @@
+<section class="mis-partidos-wrapper">
+  <div class="page-header">
+    <h1 class="page-title">Mis Partidos</h1>
+    <p class="page-subtitle">Gestiona los partidos que organizas y en los que participas</p>
+  </div>
+
+  <div class="content-area">
+    <div class="tabs-container">
+      <button class="tab-btn" [class.active]="activeTab === 'organized'"
+              (click)="switchTab('organized')">
+        Organizados
+        <span class="tab-count">{{ organizedMatches.length }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'joined'"
+              (click)="switchTab('joined')">
+        Inscritos
+        <span class="tab-count">{{ joinedMatches.length }}</span>
+      </button>
+    </div>
+
+    @if (loading) {
+      <div class="empty-state">
+        <p>Cargando partidos...</p>
+      </div>
+    } @else if (currentMatches.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">{{ activeTab === 'organized' ? '📋' : '⚽' }}</div>
+        <p class="empty-title">{{ activeTab === 'organized' ? 'No has organizado partidos' : 'No estás inscrito en ningún partido' }}</p>
+        <p class="empty-desc">{{ activeTab === 'organized' ? 'Crea tu primera pichanga y convoca jugadores' : 'Explora el catálogo y únete a una pichanga' }}</p>
+        <a routerLink="/deportes" class="btn-action">Explorar partidos</a>
+      </div>
+    } @else {
+      <div class="matches-grid">
+        @for (match of currentMatches; track match.id) {
+          <div class="glass-card match-card">
+            <div class="card-header">
+              <span class="sport-badge">{{ match.sport }}</span>
+              <span class="status-badge" [class]="'status-' + match.status.toLowerCase()">
+                {{ getStatusLabel(match.status) }}
+              </span>
+            </div>
+
+            <a [routerLink]="['/partidos', match.id]" class="card-title-link">
+              <h3 class="card-title">{{ match.title }}</h3>
+            </a>
+
+            @if (match.description) {
+              <p class="card-desc">{{ match.description }}</p>
+            }
+
+            <div class="card-info">
+              <div class="info-row">
+                <span class="info-label">Fecha</span>
+                <span>{{ formatDate(match.matchDate) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Lugar</span>
+                <span>{{ match.address }}</span>
+              </div>
+            </div>
+
+            <div class="slots-section">
+              <div class="slots-bar">
+                <div class="slots-fill" [style.width.%]="getFilledPercent(match)"></div>
+              </div>
+              <div class="slots-label">
+                <span>{{ match.totalSlots - match.availableSlots }} / {{ match.totalSlots }} jugadores</span>
+                <span class="slots-available">{{ match.availableSlots }} disponibles</span>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              @if (activeTab === 'organized') {
+                <span class="role-badge role-organizer">Organizador</span>
+                @if (match.status === 'OPEN') {
+                  <button class="btn-cancel" (click)="cancelMatch(match.id)">Cancelar partido</button>
+                }
+              } @else {
+                <span class="role-badge role-participant">Participante</span>
+                @if (match.status === 'OPEN' || match.status === 'FULL') {
+                  <button class="btn-leave" (click)="leaveMatch(match.id)">Abandonar</button>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>

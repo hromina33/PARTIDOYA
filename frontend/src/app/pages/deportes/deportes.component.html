@@ -1,0 +1,150 @@
+<section class="home-wrapper">
+  <div class="hero-banner" [ngClass]="'hero-' + (sportFilter || 'default')">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <span class="hero-label">PARTIDOS</span>
+      <h1 class="hero-title">{{ sportFilter }}</h1>
+      <span class="hero-subtitle">Encuentra tu pichanga</span>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="toolbar">
+      <div class="sport-tabs">
+        <button class="sport-tab" [class.active]="sportFilter === 'Fútbol'"
+                (click)="sportFilter = 'Fútbol'; onFilterChange()">Fútbol</button>
+        <button class="sport-tab" [class.active]="sportFilter === 'Básquet'"
+                (click)="sportFilter = 'Básquet'; onFilterChange()">Básquet</button>
+        <button class="sport-tab" [class.active]="sportFilter === 'Voleibol'"
+                (click)="sportFilter = 'Voleibol'; onFilterChange()">Voleibol</button>
+        <button class="sport-tab" [class.active]="sportFilter === 'Tenis'"
+                (click)="sportFilter = 'Tenis'; onFilterChange()">Tenis</button>
+      </div>
+      @if (isAdminCancha) {
+        <button class="btn-create" (click)="toggleCreateForm()">
+          {{ showCreateForm ? 'Cancelar' : '+ Crear partido' }}
+        </button>
+      }
+    </div>
+
+    @if (errorMessage) {
+      <div class="error-banner">{{ errorMessage }}</div>
+    }
+
+    @if (showCreateForm && isAdminCancha) {
+      <div class="glass-card create-form-card">
+        <h2>Nuevo partido</h2>
+        <form (submit)="$event.preventDefault(); createMatch()">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sport">Deporte</label>
+              <select id="sport" [(ngModel)]="newMatch.sport" name="sport" required>
+                <option value="" disabled>Selecciona</option>
+                <option value="Fútbol">Fútbol</option>
+                <option value="Básquet">Básquet</option>
+                <option value="Voleibol">Voleibol</option>
+                <option value="Tenis">Tenis</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="title">Titulo</label>
+              <input id="title" type="text" [(ngModel)]="newMatch.title" name="title" placeholder="Ej: Pichanga en Miraflores" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="address">Direccion</label>
+              <input id="address" type="text" [(ngModel)]="newMatch.address" name="address" placeholder="Ej: Parque Kennedy, Miraflores" required>
+            </div>
+            <div class="form-group">
+              <label for="matchDate">Fecha y hora</label>
+              <input id="matchDate" type="datetime-local" [(ngModel)]="newMatch.matchDate" name="matchDate" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="totalSlots">Jugadores</label>
+              <input id="totalSlots" type="number" [(ngModel)]="newMatch.totalSlots" name="totalSlots" min="2" max="30" required>
+            </div>
+            <div class="form-group">
+              <label for="description">Descripcion (opcional)</label>
+              <input id="description" type="text" [(ngModel)]="newMatch.description" name="description" placeholder="Detalles adicionales">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="price">Costo de la cancha (S/, opcional)</label>
+              <input id="price" type="number" min="0" step="0.10" [(ngModel)]="newMatch.price" name="price" placeholder="Ej: 60.00">
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">Crear partido</button>
+        </form>
+      </div>
+    }
+
+    @if (matches.length === 0) {
+      <div class="empty-state">
+        <p>No hay partidos disponibles.</p>
+        <p>Crea el primero.</p>
+      </div>
+    } @else {
+      <div class="matches-grid">
+        @for (match of matches; track match.id) {
+          <div class="glass-card match-card" [class.card-urgent]="match.availableSlots <= 3">
+            <div class="card-header">
+              <span class="sport-badge">{{ match.sport }}</span>
+              <div class="card-header-right">
+                @if (match.availableSlots <= 3) {
+                  <span class="urgent-badge">{{ match.availableSlots }} cupo{{ match.availableSlots > 1 ? 's' : '' }}</span>
+                }
+                <span class="status-badge" [class.status-open]="match.status === 'OPEN'">{{ match.status }}</span>
+              </div>
+            </div>
+            <a [routerLink]="['/partidos', match.id]" class="card-title-link">
+              <h3 class="card-title">{{ match.title }}</h3>
+            </a>
+            @if (match.description) {
+              <p class="card-desc">{{ match.description }}</p>
+            }
+            <div class="card-info">
+              <div class="info-row">
+                <span class="info-label">Fecha</span>
+                <span>{{ formatDate(match.matchDate) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Lugar</span>
+                <span>{{ match.address }}</span>
+              </div>
+              @if (match.price !== null) {
+                <div class="info-row">
+                  <span class="info-label">Costo cancha</span>
+                  <span>S/ {{ match.price | number:'1.2-2' }}</span>
+                </div>
+              }
+            </div>
+            <div class="slots-section">
+              <div class="slots-bar">
+                <div class="slots-fill" [style.width.%]="((match.totalSlots - match.availableSlots) / match.totalSlots) * 100"></div>
+              </div>
+              <div class="slots-label">
+                <span>{{ match.totalSlots - match.availableSlots }} / {{ match.totalSlots }} jugadores</span>
+                <span class="slots-available">{{ match.availableSlots }} disponibles</span>
+              </div>
+            </div>
+            <div class="card-actions">
+              @if (!hasJoined(match) && match.availableSlots > 0) {
+                <button class="btn-join" (click)="joinMatch(match.id)">Unirme</button>
+              }
+              @if (hasJoined(match)) {
+                <span class="badge-joined">Inscrito</span>
+              }
+              @if (isOrganizer(match) && canCancel(match)) {
+                <button class="btn-cancel" (click)="cancelMatch(match.id)">Cancelar</button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>

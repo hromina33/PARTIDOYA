@@ -1,0 +1,18 @@
+package com.partidoya.platform.matches.interfaces.rest.resources;
+
+import java.util.List;
+
+public record MatchResource(
+        Long id,
+        Long organizerId,
+        String sport,
+        String title,
+        String description,
+        String address,
+        String matchDate,
+        int totalSlots,
+        int availableSlots,
+        Double price,
+        String status,
+        List<Long> participantIds) {
+}

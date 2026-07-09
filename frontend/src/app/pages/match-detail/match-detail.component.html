@@ -1,0 +1,122 @@
+<section class="detail-wrapper">
+  @if (loading) {
+    <div class="loading-state">
+      <p>Cargando partido...</p>
+    </div>
+  } @else if (errorMessage) {
+    <div class="error-state">
+      <p>{{ errorMessage }}</p>
+      <a routerLink="/deportes" class="btn-back">Volver a deportes</a>
+    </div>
+  } @else if (match) {
+    <div class="detail-header">
+      <a routerLink="/deportes" class="back-link">&larr; Volver</a>
+      <div class="header-badges">
+        <span class="sport-badge">{{ match.sport }}</span>
+        <span class="status-badge" [class]="'status-' + match.status.toLowerCase()">
+          {{ getStatusLabel(match.status) }}
+        </span>
+      </div>
+    </div>
+
+    <div class="detail-content">
+      <div class="detail-main">
+        <h1 class="match-title">{{ match.title }}</h1>
+
+        @if (match.description) {
+          <p class="match-desc">{{ match.description }}</p>
+        }
+
+        <div class="info-grid">
+          <div class="info-card glass-card">
+            <span class="info-card-label">Fecha y hora</span>
+            <span class="info-card-value">{{ formatDate(match.matchDate) }}</span>
+          </div>
+          <div class="info-card glass-card">
+            <span class="info-card-label">Lugar</span>
+            <span class="info-card-value">{{ match.address }}</span>
+          </div>
+          <div class="info-card glass-card">
+            <span class="info-card-label">Organizador</span>
+            <span class="info-card-value">{{ isOrganizer ? 'Tú' : 'Jugador #' + match.organizerId }}</span>
+          </div>
+          <div class="info-card glass-card">
+            <span class="info-card-label">Cupos</span>
+            <span class="info-card-value">{{ match.availableSlots }} de {{ match.totalSlots }} disponibles</span>
+          </div>
+          @if (match.price !== null) {
+            <div class="info-card glass-card">
+              <span class="info-card-label">Costo de la cancha</span>
+              <span class="info-card-value">S/ {{ match.price | number:'1.2-2' }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="slots-section">
+          <div class="slots-bar">
+            <div class="slots-fill" [style.width.%]="filledPercent"></div>
+          </div>
+          <div class="slots-label">
+            <span>{{ match.totalSlots - match.availableSlots }} / {{ match.totalSlots }} jugadores inscritos</span>
+            <span class="slots-percent">{{ filledPercent | number:'1.0-0' }}%</span>
+          </div>
+        </div>
+
+        <div class="actions-section">
+          @if (!isOrganizer && !hasJoined && match.availableSlots > 0 && match.status === 'OPEN') {
+            <button class="btn-join" (click)="joinMatch()">Unirme al partido</button>
+          }
+          @if (hasJoined && !isOrganizer) {
+            <span class="badge-joined">Inscrito</span>
+            @if (match.status === 'OPEN' || match.status === 'FULL') {
+              <button class="btn-leave" (click)="leaveMatch()">Abandonar partido</button>
+            }
+          }
+          @if (isOrganizer) {
+            <span class="badge-organizer">Eres el organizador</span>
+            @if (canCancel) {
+              <button class="btn-cancel" (click)="cancelMatch()">Cancelar partido</button>
+            }
+          }
+          @if (match.status === 'CANCELLED') {
+            <span class="badge-cancelled">Este partido fue cancelado</span>
+          }
+        </div>
+      </div>
+
+      <div class="detail-sidebar">
+        <div class="glass-card participants-card">
+          <h3 class="sidebar-title">Jugadores inscritos ({{ match.participantIds.length }})</h3>
+          @if (match.participantIds.length === 0) {
+            <p class="no-participants">Aún no hay jugadores inscritos</p>
+          } @else {
+            <ul class="participants-list">
+              @for (pid of match.participantIds; track pid) {
+                <li class="participant-item">
+                  <span class="participant-avatar">{{ pid === match.organizerId ? '👑' : '⚽' }}</span>
+                  <span class="participant-name">
+                    @if (pid === currentUserId) {
+                      Tú
+                    } @else if (pid === match.organizerId) {
+                      Organizador
+                    } @else {
+                      Jugador #{{ pid }}
+                    }
+                  </span>
+                </li>
+              }
+            </ul>
+          }
+          <div class="empty-slots">
+            @for (i of [].constructor(match.availableSlots > 5 ? 5 : match.availableSlots); track $index) {
+              <div class="empty-slot">Cupo disponible</div>
+            }
+            @if (match.availableSlots > 5) {
+              <div class="empty-slot-more">+{{ match.availableSlots - 5 }} cupos más</div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</section>
