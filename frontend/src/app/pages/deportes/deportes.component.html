@@ -32,53 +32,60 @@
     }
 
     @if (showCreateForm && isAdminCancha) {
-      <div class="create-form-card">
-        <h2>Nuevo partido</h2>
-        <form (submit)="$event.preventDefault(); createMatch()">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="sport">Deporte</label>
-              <select id="sport" [(ngModel)]="newMatch.sport" name="sport" required>
-                <option value="" disabled>Selecciona</option>
-                <option value="Fútbol">Fútbol</option>
-                <option value="Básquet">Básquet</option>
-                <option value="Voleibol">Voleibol</option>
-                <option value="Tenis">Tenis</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="title">Titulo</label>
-              <input id="title" type="text" [(ngModel)]="newMatch.title" name="title" placeholder="Ej: Pichanga en Miraflores" required>
-            </div>
+      <div class="modal-overlay" (click)="toggleCreateForm()">
+        <div class="create-form-card" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Nuevo partido</h2>
+            <button type="button" class="modal-close" (click)="toggleCreateForm()" aria-label="Cerrar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="address">Direccion</label>
-              <input id="address" #addressInput type="text" [(ngModel)]="newMatch.address" name="address" placeholder="Empieza a escribir una direccion..." autocomplete="off" required>
+          <form (submit)="$event.preventDefault(); createMatch()">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="sport">Deporte</label>
+                <select id="sport" [(ngModel)]="newMatch.sport" name="sport" required>
+                  <option value="" disabled>Selecciona</option>
+                  <option value="Fútbol">Fútbol</option>
+                  <option value="Básquet">Básquet</option>
+                  <option value="Voleibol">Voleibol</option>
+                  <option value="Tenis">Tenis</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="title">Titulo</label>
+                <input id="title" type="text" [(ngModel)]="newMatch.title" name="title" placeholder="Ej: Pichanga en Miraflores" required>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="matchDate">Fecha y hora</label>
-              <input id="matchDate" type="datetime-local" [(ngModel)]="newMatch.matchDate" name="matchDate" required>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="address">Direccion</label>
+                <input id="address" #addressInput type="text" [(ngModel)]="newMatch.address" name="address" placeholder="Empieza a escribir una direccion..." autocomplete="off" required>
+              </div>
+              <div class="form-group">
+                <label for="matchDate">Fecha y hora</label>
+                <input id="matchDate" type="datetime-local" [(ngModel)]="newMatch.matchDate" name="matchDate" required>
+              </div>
             </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="totalSlots">Jugadores</label>
-              <input id="totalSlots" type="number" [(ngModel)]="newMatch.totalSlots" name="totalSlots" min="2" max="30" required>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="totalSlots">Jugadores</label>
+                <input id="totalSlots" type="number" [(ngModel)]="newMatch.totalSlots" name="totalSlots" min="2" max="30" required>
+              </div>
+              <div class="form-group">
+                <label for="description">Descripcion (opcional)</label>
+                <input id="description" type="text" [(ngModel)]="newMatch.description" name="description" placeholder="Detalles adicionales">
+              </div>
             </div>
-            <div class="form-group">
-              <label for="description">Descripcion (opcional)</label>
-              <input id="description" type="text" [(ngModel)]="newMatch.description" name="description" placeholder="Detalles adicionales">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="price">Costo de la cancha (S/, opcional)</label>
+                <input id="price" type="number" min="0" step="0.10" [(ngModel)]="newMatch.price" name="price" placeholder="Ej: 60.00">
+              </div>
             </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="price">Costo de la cancha (S/, opcional)</label>
-              <input id="price" type="number" min="0" step="0.10" [(ngModel)]="newMatch.price" name="price" placeholder="Ej: 60.00">
-            </div>
-          </div>
-          <button type="submit" class="btn-submit">Crear partido</button>
-        </form>
+            <button type="submit" class="btn-submit">Crear partido</button>
+          </form>
+        </div>
       </div>
     }
 
