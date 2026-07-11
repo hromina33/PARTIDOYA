@@ -14,8 +14,24 @@
 <section class="dashboard">
   <div class="container">
 
-    <div class="welcome">
-      <h1>{{ userName ? 'Hola, ' + userName : 'Bienvenido' }}</h1>
+    <div class="dashboard-intro">
+      <div class="intro-copy">
+        <span class="intro-eyebrow">Panel deportivo</span>
+        <h1>{{ userName ? 'Hola, ' + userName : 'Explora PartidoYA' }}</h1>
+        <p>
+          {{ isLoggedIn
+            ? 'Organiza tus partidos, revisa cupos disponibles y encuentra una pichanga cerca de ti.'
+            : 'Mira partidos, deportes y canchas disponibles. Inicia sesión cuando quieras unirte o crear una pichanga.' }}
+        </p>
+      </div>
+      <div class="intro-actions">
+        <a routerLink="/deportes" class="intro-btn intro-btn-primary">Explorar deportes</a>
+        @if (isLoggedIn) {
+          <a routerLink="/mis-partidos" class="intro-btn intro-btn-secondary">Mis partidos</a>
+        } @else {
+          <a routerLink="/login" class="intro-btn intro-btn-secondary">Iniciar sesión</a>
+        }
+      </div>
     </div>
 
     <!-- Banner Carousel -->
@@ -36,6 +52,44 @@
           <button class="banner-dot" [class.active]="i === currentBanner" (click)="goToBanner(i)"></button>
         }
       </div>
+    </div>
+
+    <div class="dashboard-summary">
+      <a routerLink="/deportes" class="summary-card">
+        <span class="summary-value">{{ openMatchesCount }}</span>
+        <span class="summary-label">Partidos abiertos</span>
+        <p>Encuentra una pichanga disponible para hoy o los próximos días.</p>
+      </a>
+      <a routerLink="/deportes" class="summary-card summary-accent">
+        <span class="summary-value">{{ almostFullCount }}</span>
+        <span class="summary-label">Últimos cupos</span>
+        <p>Revisa partidos que están por completarse y entra antes de que cierren.</p>
+      </a>
+      <a [routerLink]="isLoggedIn ? '/mis-partidos' : '/login'" class="summary-card">
+        <span class="summary-value">{{ joinedMatches.length }}</span>
+        <span class="summary-label">Tus partidos</span>
+        <p>{{ isLoggedIn ? 'Ten a la mano tus próximas jugadas.' : 'Inicia sesión para guardar y seguir tus partidos.' }}</p>
+      </a>
+    </div>
+
+    <div class="quick-guide">
+      <div class="quick-guide-copy">
+        <span>Empieza aquí</span>
+        <h2>Encuentra tu siguiente partido sin perder tiempo</h2>
+      </div>
+      <div class="quick-guide-steps">
+        <div><strong>1</strong><span>Elige deporte</span></div>
+        <div><strong>2</strong><span>Revisa cupos</span></div>
+        <div><strong>3</strong><span>Únete o crea</span></div>
+      </div>
+    </div>
+
+    <div class="section-header dashboard-section-title">
+      <div>
+        <span class="section-kicker">Deportes</span>
+        <h2>Elige cómo quieres jugar</h2>
+      </div>
+      <a routerLink="/deportes" class="section-link">Ver todos</a>
     </div>
 
     <!-- Fila 1: Deportes -->
@@ -64,6 +118,13 @@
           <span class="sport-card-name">Tenis</span>
         </div>
       </a>
+    </div>
+
+    <div class="section-header dashboard-section-title">
+      <div>
+        <span class="section-kicker">Resumen</span>
+        <h2>Lo más útil para hoy</h2>
+      </div>
     </div>
 
     <!-- Fila 2: Banners destacados -->
@@ -158,6 +219,17 @@
     </div>
 
     <!-- Cerca de ti (geolocalización) -->
+    @if (!isLoggedIn) {
+      <div class="guest-card">
+        <div>
+          <span class="guest-kicker">Cuenta gratuita</span>
+          <h2>Guarda tus partidos y únete con un clic</h2>
+          <p>Crea tu cuenta para inscribirte, ver tus partidos y recibir una experiencia más personalizada.</p>
+        </div>
+        <a routerLink="/login" class="guest-link">Crear cuenta o iniciar sesión</a>
+      </div>
+    }
+
     @if (nearbyMatches.length > 0) {
       <div class="section">
         <div class="section-header">

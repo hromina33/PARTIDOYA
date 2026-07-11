@@ -8,20 +8,30 @@ export const routes: Routes = [
   },
   {
     path: 'register',
-    loadComponent: () => import('./pages/register/register.component').then(m => m.RegisterComponent)
+    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
   },
   {
     path: 'login',
     loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
   },
   {
+    path: 'contactanos',
+    loadComponent: () => import('./pages/contactanos/contactanos.component').then(m => m.ContactanosComponent)
+  },
+  {
+    path: 'planes-jugador',
+    loadComponent: () => import('./pages/planes-jugador/planes-jugador.component').then(m => m.PlanesJugadorComponent)
+  },
+  {
+    path: 'planes-cancha',
+    loadComponent: () => import('./pages/planes-cancha/planes-cancha.component').then(m => m.PlanesCanchaComponent)
+  },
+  {
     path: 'home',
-    canActivate: [authGuard],
     loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent)
   },
   {
     path: 'deportes',
-    canActivate: [authGuard],
     loadComponent: () => import('./pages/deportes/deportes.component').then(m => m.DeportesComponent)
   },
   {

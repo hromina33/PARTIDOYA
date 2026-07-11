@@ -18,7 +18,6 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: #c6f135;
-  letter-spacing: -0.5px;
 }
 
 .navbar-links {
@@ -98,6 +97,43 @@
   }
 }
 
+.user-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.7rem 0.35rem 0.35rem;
+  border: 1px solid rgba(198, 241, 53, 0.35);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+
+  &:hover {
+    border-color: #c6f135;
+    background: rgba(198, 241, 53, 0.12);
+    color: #c6f135;
+  }
+}
+
+.user-entry-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #c6f135;
+  color: #0a0f1a;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.user-entry-label {
+  white-space: nowrap;
+}
+
 .btn-sm {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
@@ -134,10 +170,6 @@
     gap: 0.5rem;
     margin-left: auto;
   }
-
-  .btn-sm {
-    padding: 0.45rem 0.7rem;
-  }
 }
 
 @media (max-width: 480px) {
@@ -152,5 +184,13 @@
 
   .user-dropdown {
     right: 0;
+  }
+
+  .user-entry {
+    padding: 0.3rem;
+  }
+
+  .user-entry-label {
+    display: none;
   }
 }

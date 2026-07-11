@@ -83,6 +83,24 @@ export class MiPerfilComponent implements OnInit {
     return this.role === 'ADMIN_CANCHA' ? 'Administrador de cancha' : 'Jugador';
   }
 
+  get initials(): string {
+    const parts = this.fullName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'PY';
+    return parts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
+  }
+
+  get planLabel(): string {
+    return this.availablePlans.find(p => p.value === this.plan)?.label || 'Sin plan seleccionado';
+  }
+
+  get displaySport(): string {
+    return this.primarySport || 'Sin definir';
+  }
+
+  get displaySkillLevel(): string {
+    return this.skillLevels.find(level => level.value === this.skillLevel)?.label || 'Sin definir';
+  }
+
   get availablePlans(): { value: string; label: string }[] {
     return this.plansByRole[this.role] || [];
   }

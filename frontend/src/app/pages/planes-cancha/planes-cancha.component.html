@@ -1,0 +1,28 @@
+<section class="plans-page court-page">
+  <div class="container">
+    <div class="plans-header">
+      <span>Planes para canchas</span>
+      <h1>Haz crecer tu cancha con PartidoYA</h1>
+      <p>Planes para publicar tus espacios, ordenar reservas y conectar con jugadores activos.</p>
+    </div>
+
+    <div class="plans-grid">
+      @for (plan of plans; track plan.name) {
+        <article class="plan-card" [class.featured]="plan.featured">
+          @if (plan.featured) {
+            <span class="badge">Recomendado</span>
+          }
+          <h2>{{ plan.name }}</h2>
+          <div class="price">{{ plan.price }} <span>por mes</span></div>
+          <p>{{ plan.description }}</p>
+          <ul>
+            @for (benefit of plan.benefits; track benefit) {
+              <li>{{ benefit }}</li>
+            }
+          </ul>
+          <a routerLink="/register" class="plan-cta">{{ plan.cta }}</a>
+        </article>
+      }
+    </div>
+  </div>
+</section>

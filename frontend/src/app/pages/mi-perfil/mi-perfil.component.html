@@ -1,91 +1,144 @@
 <section class="perfil-wrapper">
-  <div class="page-header">
-    <h1 class="page-title">Mi Perfil</h1>
-    <p class="page-subtitle">Actualiza tus datos personales, deporte principal y preferencias de juego</p>
-  </div>
+  <div class="container">
+    <div class="page-header">
+      <span>Cuenta</span>
+      <h1>Mi perfil</h1>
+      <p>Actualiza tus datos personales, plan y preferencias deportivas.</p>
+    </div>
 
-  <div class="content-area">
     @if (loading) {
       <p class="loading-text">Cargando perfil...</p>
     } @else {
-      <div class="glass-card form-card">
-        @if (successMessage) {
-          <div class="success-banner">{{ successMessage }}</div>
-        }
-        @if (errorMessage) {
-          <div class="error-banner">{{ errorMessage }}</div>
-        }
+      @if (successMessage) {
+        <div class="success-banner">{{ successMessage }}</div>
+      }
+      @if (errorMessage) {
+        <div class="error-banner">{{ errorMessage }}</div>
+      }
 
-        <form (submit)="$event.preventDefault(); save()">
-          <div class="form-group">
-            <label for="fullName">Nombre completo</label>
-            <input
-              id="fullName"
-              type="text"
-              name="fullName"
-              [(ngModel)]="fullName"
-              (ngModelChange)="onNameInput()"
-              [class.invalid]="nameInvalid"
-              placeholder="Ej: Heidi Palacios"
-            >
-            @if (nameInvalid) {
-              <span class="field-error">El nombre completo es obligatorio.</span>
-            }
-          </div>
+      <div class="profile-layout">
+        <aside class="profile-summary">
+          <div class="avatar">{{ initials }}</div>
+          <h2>{{ fullName || 'Tu perfil' }}</h2>
+          <p>{{ roleLabel }}</p>
 
-          <div class="form-group">
-            <label>Tipo de cuenta</label>
-            <input type="text" [value]="roleLabel" disabled>
-          </div>
-
-          <div class="form-group">
-            <label for="plan">Plan</label>
-            <select id="plan" name="plan" [(ngModel)]="plan">
-              @for (p of availablePlans; track p.value) {
-                <option [value]="p.value">{{ p.label }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="primarySport">Deporte principal</label>
-            <select id="primarySport" name="primarySport" [(ngModel)]="primarySport">
-              <option value="" disabled>Selecciona tu deporte principal</option>
-              @for (sport of sports; track sport) {
-                <option [value]="sport">{{ sport }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="skillLevel">Nivel de juego</label>
-            <select id="skillLevel" name="skillLevel" [(ngModel)]="skillLevel">
-              <option value="" disabled>Selecciona tu nivel de juego</option>
-              @for (level of skillLevels; track level.value) {
-                <option [value]="level.value">{{ level.label }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Disponibilidad horaria</label>
-            <div class="checkbox-group">
-              @for (slot of timeSlots; track slot.value) {
-                <label class="checkbox-option">
-                  <input
-                    type="checkbox"
-                    [checked]="availability.includes(slot.value)"
-                    (change)="toggleAvailability(slot.value)"
-                  >
-                  {{ slot.label }}
-                </label>
-              }
+          <div class="summary-list">
+            <div>
+              <span>Correo</span>
+              <strong>No disponible</strong>
+            </div>
+            <div>
+              <span>Plan actual</span>
+              <strong>{{ planLabel }}</strong>
+            </div>
+            <div>
+              <span>Deporte principal</span>
+              <strong>{{ displaySport }}</strong>
+            </div>
+            <div>
+              <span>Nivel</span>
+              <strong>{{ displaySkillLevel }}</strong>
             </div>
           </div>
+        </aside>
 
-          <button type="submit" class="btn-submit" [disabled]="saving">
-            {{ saving ? 'Guardando...' : 'Guardar cambios' }}
-          </button>
+        <form class="profile-form" (submit)="$event.preventDefault(); save()">
+          <section class="form-section">
+            <div class="section-title">
+              <h3>Datos personales</h3>
+              <p>Información básica visible en tu cuenta.</p>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="fullName">Nombre completo</label>
+                <input
+                  id="fullName"
+                  type="text"
+                  name="fullName"
+                  [(ngModel)]="fullName"
+                  (ngModelChange)="onNameInput()"
+                  [class.invalid]="nameInvalid"
+                  placeholder="Ej: Heidi Palacios"
+                >
+                @if (nameInvalid) {
+                  <span class="field-error">El nombre completo es obligatorio.</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label>Tipo de cuenta</label>
+                <input type="text" [value]="roleLabel" disabled>
+              </div>
+            </div>
+          </section>
+
+          <section class="form-section">
+            <div class="section-title">
+              <h3>Plan</h3>
+              <p>Selecciona el plan asociado a tu tipo de cuenta.</p>
+            </div>
+
+            <div class="form-group">
+              <label for="plan">Plan</label>
+              <select id="plan" name="plan" [(ngModel)]="plan">
+                @for (p of availablePlans; track p.value) {
+                  <option [value]="p.value">{{ p.label }}</option>
+                }
+              </select>
+            </div>
+          </section>
+
+          <section class="form-section">
+            <div class="section-title">
+              <h3>Preferencias deportivas</h3>
+              <p>Ayuda a encontrar partidos que encajen contigo.</p>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="primarySport">Deporte principal</label>
+                <select id="primarySport" name="primarySport" [(ngModel)]="primarySport">
+                  <option value="" disabled>Selecciona tu deporte principal</option>
+                  @for (sport of sports; track sport) {
+                    <option [value]="sport">{{ sport }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="skillLevel">Nivel de juego</label>
+                <select id="skillLevel" name="skillLevel" [(ngModel)]="skillLevel">
+                  <option value="" disabled>Selecciona tu nivel de juego</option>
+                  @for (level of skillLevels; track level.value) {
+                    <option [value]="level.value">{{ level.label }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Disponibilidad horaria</label>
+              <div class="checkbox-group">
+                @for (slot of timeSlots; track slot.value) {
+                  <label class="checkbox-option">
+                    <input
+                      type="checkbox"
+                      [checked]="availability.includes(slot.value)"
+                      (change)="toggleAvailability(slot.value)"
+                    >
+                    {{ slot.label }}
+                  </label>
+                }
+              </div>
+            </div>
+          </section>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-submit" [disabled]="saving">
+              {{ saving ? 'Guardando...' : 'Guardar cambios' }}
+            </button>
+          </div>
         </form>
       </div>
     }

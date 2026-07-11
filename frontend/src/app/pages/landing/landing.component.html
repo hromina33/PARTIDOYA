@@ -1,12 +1,12 @@
 <section class="hero">
-  <video #heroVideo class="hero-video" autoplay muted loop playsinline preload="auto"
-         src="/assets/videos/hero-bg.mp4"></video>
-  <div class="hero-overlay"></div>
+  <video #heroVideo class="hero-video" autoplay muted loop playsinline preload="auto" src="/assets/videos/hero-bg.mp4"></video>
+  <div class="hero-overlay" aria-hidden="true"></div>
   <div class="container hero-inner">
     <div class="hero-text">
+      <span class="hero-kicker">PartidoYA</span>
       <h1 class="hero-title">
         ARMA TU PICHANGA
-        <span class="hero-highlight">EN SEGUNDOS</span>
+        <span>EN SEGUNDOS</span>
       </h1>
       <ul class="hero-bullets">
         <li>Crea un partido y convoca jugadores al instante</li>
@@ -15,6 +15,7 @@
       </ul>
       <div class="hero-actions">
         <a routerLink="/register" class="btn-hero">Únete ahora</a>
+        <a routerLink="/contactanos" class="btn-hero-secondary">Contáctanos</a>
       </div>
     </div>
   </div>
@@ -38,174 +39,62 @@
     <span class="marquee-dot"></span>
     <span class="marquee-item">TENIS</span>
     <span class="marquee-dot"></span>
-    <span class="marquee-item">FÚTBOL</span>
-    <span class="marquee-dot"></span>
-    <span class="marquee-item">BÁSQUET</span>
-    <span class="marquee-dot"></span>
-    <span class="marquee-item">VOLEIBOL</span>
-    <span class="marquee-dot"></span>
-    <span class="marquee-item">TENIS</span>
-    <span class="marquee-dot"></span>
-    <span class="marquee-item">FÚTBOL</span>
-    <span class="marquee-dot"></span>
-    <span class="marquee-item">BÁSQUET</span>
-    <span class="marquee-dot"></span>
-    <span class="marquee-item">VOLEIBOL</span>
-    <span class="marquee-dot"></span>
-    <span class="marquee-item">TENIS</span>
-    <span class="marquee-dot"></span>
   </div>
 </div>
 
-<section class="pricing">
+<section class="subscriptions">
   <div class="container">
-    <h2 class="section-title">Planes para cada usuario</h2>
-    <p class="section-subtitle">Precios simples y transparentes. Elige el plan que se adapte a ti.</p>
+    <div class="section-heading">
+      <span class="section-kicker">Suscripciones</span>
+      <h2>Únete a PartidoYA</h2>
+      <p>Elige tu camino y revisa los planes pensados para jugadores o para quienes gestionan canchas.</p>
+    </div>
 
-    <div class="pricing-groups">
-      <div class="pricing-group">
-        <div class="pricing-group-heading">
-          <span class="pricing-group-kicker">Deportistas</span>
-          <h3>Planes para jugador</h3>
+    <div class="subscription-grid">
+      <article class="subscription-card player-card">
+        <div>
+          <span class="subscription-label">Deportistas</span>
+          <h3>Soy jugador</h3>
+          <p>Encuentra partidos, únete a pichangas disponibles y mejora tu experiencia de juego.</p>
         </div>
-        <div class="pricing-cards">
+        <a routerLink="/planes-jugador" class="subscription-link">Ver planes</a>
+      </article>
 
-      <div class="pricing-card">
-        <div class="card-top">
-          <span class="plan-name">Jugador Básico</span>
-          <div class="card-price">
-            <span class="price-currency">S/</span>
-            <span class="price-amount">7</span>
-            <span class="price-cents">.90</span>
-            <span class="price-period">por mes</span>
-          </div>
-          <p class="plan-desc">Para deportistas casuales que buscan partidos ocasionales.</p>
-          <a routerLink="/register" class="btn-plan">Comenzar</a>
+      <article class="subscription-card court-card">
+        <div>
+          <span class="subscription-label">Canchas</span>
+          <h3>Trabaja con nosotros</h3>
+          <p>Publica tus espacios deportivos, gestiona reservas y llega a más jugadores.</p>
         </div>
-        <div class="card-bottom">
-          <span class="features-label">FUNCIONALIDADES</span>
-          <ul class="plan-features">
-            <li>Creación de perfil deportivo</li>
-            <li>Selección de deportes favoritos</li>
-            <li>Búsqueda y creación de partidos</li>
-            <li>Filtros por deporte, fecha y ubicación</li>
-            <li>Unión a partidos disponibles</li>
-            <li>Notificaciones básicas</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="pricing-card card-featured">
-        <div class="card-badge">Popular</div>
-        <div class="card-top">
-          <span class="plan-name">Jugador Plus</span>
-          <div class="card-price">
-            <span class="price-currency">S/</span>
-            <span class="price-amount">14</span>
-            <span class="price-cents">.90</span>
-            <span class="price-period">por mes</span>
-          </div>
-          <p class="plan-desc">Para deportistas frecuentes que juegan varias veces al mes.</p>
-          <a routerLink="/register" class="btn-plan btn-plan-featured">Elegir Plus</a>
-        </div>
-        <div class="card-bottom">
-          <span class="features-label">FUNCIONALIDADES</span>
-          <p class="features-includes">Todo lo del <strong>Básico</strong>, además...</p>
-          <ul class="plan-features">
-            <li>Filtros avanzados por nivel y distancia</li>
-            <li>Prioridad en cupos</li>
-            <li>Historial de partidos</li>
-            <li>Reputación de jugadores</li>
-            <li>Notificaciones personalizadas</li>
-          </ul>
-        </div>
-      </div>
-
-        </div>
-      </div>
-
-      <div class="pricing-group">
-        <div class="pricing-group-heading">
-          <span class="pricing-group-kicker">Administradores</span>
-          <h3>Planes para cancha</h3>
-        </div>
-        <div class="pricing-cards">
-
-      <div class="pricing-card">
-        <div class="card-top">
-          <span class="plan-name">Cancha Emprendedor</span>
-          <div class="card-price">
-            <span class="price-currency">S/</span>
-            <span class="price-amount">29</span>
-            <span class="price-cents">.90</span>
-            <span class="price-period">por mes</span>
-          </div>
-          <p class="plan-desc">Para canchas pequeñas o independientes.</p>
-          <a routerLink="/register" class="btn-plan">Comenzar</a>
-        </div>
-        <div class="card-bottom">
-          <span class="features-label">FUNCIONALIDADES</span>
-          <ul class="plan-features">
-            <li>Registro y publicación de cancha</li>
-            <li>Administración de horarios</li>
-            <li>Gestión básica de reservas</li>
-            <li>Visibilidad en búsquedas</li>
-            <li>Recepción de solicitudes</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="pricing-card card-featured">
-        <div class="card-badge">Recomendado</div>
-        <div class="card-top">
-          <span class="plan-name">Cancha Business</span>
-          <div class="card-price">
-            <span class="price-currency">S/</span>
-            <span class="price-amount">59</span>
-            <span class="price-cents">.90</span>
-            <span class="price-period">por mes</span>
-          </div>
-          <p class="plan-desc">Para complejos deportivos con mayor flujo de reservas.</p>
-          <a routerLink="/register" class="btn-plan btn-plan-featured">Elegir Business</a>
-        </div>
-        <div class="card-bottom">
-          <span class="features-label">FUNCIONALIDADES</span>
-          <p class="features-includes">Todo lo del <strong>Emprendedor</strong>, además...</p>
-          <ul class="plan-features">
-            <li>Estadísticas de ocupación</li>
-            <li>Promoción destacada en búsquedas</li>
-            <li>Gestión avanzada de reservas</li>
-            <li>Reportes de demanda</li>
-            <li>Soporte preferente</li>
-          </ul>
-        </div>
-      </div>
-
-        </div>
-      </div>
-
+        <a routerLink="/planes-cancha" class="subscription-link">Ver planes</a>
+      </article>
     </div>
   </div>
 </section>
 
-<section class="features">
-  <div class="container">
-    <h2 class="section-title">Cómo funciona</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-number">01</div>
-        <h3>Crea tu perfil</h3>
-        <p>Regístrate, elige tus deportes favoritos y tu nivel de juego.</p>
+<section class="about">
+  <div class="container about-inner">
+    <div class="about-copy">
+      <span class="section-kicker">Quiénes somos</span>
+      <h2>Conectamos jugadores, partidos y canchas en un solo lugar</h2>
+      <p>
+        PartidoYA nace para hacer más fácil organizar una pichanga: menos coordinación manual,
+        más cupos visibles y una experiencia clara para quienes juegan y para quienes administran canchas.
+      </p>
+    </div>
+
+    <div class="about-points">
+      <div class="about-point">
+        <strong>Para jugadores</strong>
+        <span>Partidos disponibles, filtros útiles y una comunidad lista para jugar.</span>
       </div>
-      <div class="feature-card">
-        <div class="feature-number">02</div>
-        <h3>Busca o crea un partido</h3>
-        <p>Filtra por deporte, ubicación y horario. O publica el tuyo.</p>
+      <div class="about-point">
+        <strong>Para canchas</strong>
+        <span>Mayor visibilidad, gestión ordenada y contacto con deportistas activos.</span>
       </div>
-      <div class="feature-card">
-        <div class="feature-number">03</div>
-        <h3>Únete y juega</h3>
-        <p>Confirma tu asistencia con un click. El cupo se reserva al instante.</p>
+      <div class="about-point">
+        <strong>Para la comunidad</strong>
+        <span>Una forma simple de llenar cupos, organizar horarios y mantener el deporte en movimiento.</span>
       </div>
     </div>
   </div>

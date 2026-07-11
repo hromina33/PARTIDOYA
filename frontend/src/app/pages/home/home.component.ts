@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatchService, MatchResponse } from '../../shared/services/match.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { GeolocationService } from '../../shared/services/geolocation.service';
@@ -19,6 +19,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   almostFullMatches: MatchResponse[] = [];
   nearbyMatches: MatchResponse[] = [];
   joinedMatches: MatchResponse[] = [];
+  openMatchesCount = 0;
+  almostFullCount = 0;
 
   banners = [
     { title: 'Pichanga Relámpago', subtitle: 'Fútbol 7 este sábado a las 4pm — ¡últimos 3 cupos!', cta: 'Ver partido', theme: 'banner-green' },
@@ -43,6 +45,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private matchService: MatchService,
     private authService: AuthService,
     private geolocation: GeolocationService,
+    private router: Router,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef
   ) {}
@@ -54,10 +57,11 @@ export class HomeComponent implements OnInit, OnDestroy {
         const sorted = [...matches].sort((a, b) =>
           new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime()
         );
+        const almostFull = matches.filter(m => m.availableSlots > 0 && m.availableSlots <= 3);
+        this.openMatchesCount = matches.length;
+        this.almostFullCount = almostFull.length;
         this.upcomingMatches = sorted.slice(0, 4);
-        this.almostFullMatches = matches
-          .filter(m => m.availableSlots > 0 && m.availableSlots <= 3)
-          .slice(0, 4);
+        this.almostFullMatches = almostFull.slice(0, 4);
         this.cdr.detectChanges();
         this.loadNearbyMatches(sorted);
       }
@@ -68,7 +72,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private loadJoinedMatches(): void {
     const userId = this.authService.getUserId();
-    if (!userId) return;
+    if (!userId) {
+      this.joinedMatches = [];
+      return;
+    }
     this.matchService.getMatchesByParticipant(userId).subscribe({
       next: (matches) => {
         this.joinedMatches = [...matches]
@@ -126,9 +133,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.startAutoplay();
   }
 
+  get isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
   joinMatch(matchId: number): void {
     const userId = this.authService.getUserId();
-    if (!userId) return;
+    if (!userId) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.matchService.joinMatch(matchId, userId).subscribe({
       next: () => this.ngOnInit()
     });
