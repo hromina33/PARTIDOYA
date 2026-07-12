@@ -1,0 +1,130 @@
+import { CommonModule } from '@angular/common';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../shared/services/auth.service';
+import { CourtResponse, CourtService, ReservationResponse } from '../../shared/services/court.service';
+import { MapsLoaderService } from '../../shared/services/maps-loader.service';
+
+@Component({
+  selector: 'app-cancha-detail',
+  imports: [CommonModule, FormsModule, RouterLink],
+  templateUrl: './cancha-detail.component.html',
+  styleUrl: './cancha-detail.component.scss'
+})
+export class CanchaDetailComponent implements OnInit {
+  @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
+
+  court: CourtResponse | null = null;
+  loading = true;
+  errorMessage = '';
+  successMessage = '';
+  mapError = '';
+
+  selectedDate = '';
+  selectedSchedule = '';
+  paymentMethod = 'Tarjeta simulada';
+  reserving = false;
+  reservation: ReservationResponse | null = null;
+
+  constructor(
+    private courtService: CourtService,
+    private authService: AuthService,
+    private mapsLoader: MapsLoaderService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (!id) {
+      this.router.navigate(['/canchas']);
+      return;
+    }
+    this.loadCourt(id);
+  }
+
+  get canReserve(): boolean {
+    return !!this.selectedDate && !!this.selectedSchedule && !this.reserving;
+  }
+
+  get primaryImage(): string | null {
+    return this.court?.mainImageUrl || this.court?.imageUrls?.[0] || null;
+  }
+
+  get primarySport(): string {
+    return this.court?.sports?.[0] || 'Fútbol';
+  }
+
+  get selectedStartTime(): string {
+    return this.selectedSchedule.split('-')[0] || '';
+  }
+
+  get reservationMatchDate(): string {
+    return this.selectedDate && this.selectedStartTime ? `${this.selectedDate}T${this.selectedStartTime}` : '';
+  }
+
+  get reservationTitle(): string {
+    return this.court ? `Pichanga en ${this.court.name}` : '';
+  }
+
+  private loadCourt(id: number): void {
+    this.courtService.getCourtById(id).subscribe({
+      next: (court) => {
+        this.court = court;
+        this.loading = false;
+        setTimeout(() => this.initMap(), 0);
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Cancha no encontrada.';
+        this.loading = false;
+      }
+    });
+  }
+
+  reserve(): void {
+    if (!this.court || !this.canReserve) return;
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    const [startTime, endTime] = this.selectedSchedule.split('-');
+    this.reserving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.courtService.reserveCourt(this.court.id, userId, this.selectedDate, startTime, endTime, this.paymentMethod).subscribe({
+      next: (reservation) => {
+        this.reservation = reservation;
+        this.successMessage = 'Reserva y pago aprobados correctamente.';
+        this.reserving = false;
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'No se pudo reservar la cancha.';
+        this.reserving = false;
+      }
+    });
+  }
+
+  private async initMap(): Promise<void> {
+    if (!this.court || !this.mapContainer) return;
+    if (this.court.latitude === null || this.court.longitude === null) {
+      this.mapError = 'Esta cancha aún no tiene coordenadas válidas.';
+      return;
+    }
+    try {
+      await this.mapsLoader.load();
+      const google = window.google;
+      const center = { lat: this.court.latitude, lng: this.court.longitude };
+      const map = new google.maps.Map(this.mapContainer.nativeElement, {
+        center,
+        zoom: 15,
+        disableDefaultUI: true,
+        zoomControl: true
+      });
+      new google.maps.Marker({ position: center, map, title: this.court.name });
+    } catch {
+      this.mapError = 'No se pudo cargar el mapa.';
+    }
+  }
+}

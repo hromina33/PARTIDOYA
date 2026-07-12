@@ -80,6 +80,20 @@ export class AuthService {
     return localStorage.getItem('plan');
   }
 
+  isPlayerPlan(): boolean {
+    const plan = this.getPlan();
+    return this.getRole() === 'JUGADOR' && (plan === 'JUGADOR_BASICO' || plan === 'JUGADOR_PLUS');
+  }
+
+  isCourtPlan(): boolean {
+    const plan = this.getPlan();
+    return this.getRole() === 'ADMIN_CANCHA' && (plan === 'CANCHA_EMPRENDEDOR' || plan === 'CANCHA_BUSINESS');
+  }
+
+  dashboardRoute(): string {
+    return '/home';
+  }
+
   setPlan(plan: string): void {
     localStorage.setItem('plan', plan);
   }

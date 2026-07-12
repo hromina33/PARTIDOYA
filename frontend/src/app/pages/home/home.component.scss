@@ -431,6 +431,16 @@
 .welcome {
   margin-bottom: 1.5rem;
 
+  .intro-eyebrow,
+  p,
+  .intro-actions {
+    display: none;
+  }
+
+  .intro-copy {
+    max-width: none;
+  }
+
   h1 {
     font-size: 1.75rem;
     font-weight: 700;

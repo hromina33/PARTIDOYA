@@ -49,6 +49,9 @@ export class DeportesComponent implements OnInit {
       if (sport) {
         this.sportFilter = sport;
       }
+      if (params['create'] === 'true' && this.canUsePlayerFeatures) {
+        this.prefillFromReservedCourt(params);
+      }
       this.loadMatches();
     });
   }
@@ -75,6 +78,10 @@ export class DeportesComponent implements OnInit {
     } else {
       this.addressAutocomplete = null;
     }
+  }
+
+  startCreateFlow(): void {
+    this.router.navigate(['/canchas']);
   }
 
   private async initAddressAutocomplete(): Promise<void> {
@@ -124,6 +131,7 @@ export class DeportesComponent implements OnInit {
   }
 
   joinMatch(matchId: number): void {
+    if (!this.canUsePlayerFeatures) return;
     const userId = this.authService.getUserId();
     if (!userId) return;
     this.errorMessage = '';
@@ -149,6 +157,10 @@ export class DeportesComponent implements OnInit {
 
   get isAdminCancha(): boolean {
     return this.authService.isAdminCancha();
+  }
+
+  get canUsePlayerFeatures(): boolean {
+    return this.authService.isPlayerPlan();
   }
 
   isOrganizer(match: MatchResponse): boolean {
@@ -188,5 +200,22 @@ export class DeportesComponent implements OnInit {
       latitude: null,
       longitude: null
     };
+  }
+
+  private prefillFromReservedCourt(params: Record<string, string>): void {
+    this.showCreateForm = true;
+    this.newMatch = {
+      organizerId: this.authService.getUserId() || 0,
+      sport: params['sport'] || this.sportFilter,
+      title: params['title'] || '',
+      description: params['reservationId'] ? `Reserva #${params['reservationId']} confirmada` : null,
+      address: params['address'] || '',
+      matchDate: params['matchDate'] || '',
+      totalSlots: 10,
+      price: params['price'] ? Number(params['price']) : null,
+      latitude: params['latitude'] ? Number(params['latitude']) : null,
+      longitude: params['longitude'] ? Number(params['longitude']) : null
+    };
+    setTimeout(() => this.initAddressAutocomplete(), 0);
   }
 }

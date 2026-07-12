@@ -66,7 +66,11 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.loadNearbyMatches(sorted);
       }
     });
-    this.loadJoinedMatches();
+    if (this.canUsePlayerFeatures) {
+      this.loadJoinedMatches();
+    } else {
+      this.joinedMatches = [];
+    }
     this.startAutoplay();
   }
 
@@ -137,7 +141,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     return this.authService.isLoggedIn();
   }
 
+  get canUsePlayerFeatures(): boolean {
+    return this.authService.isPlayerPlan();
+  }
+
+  get canManageCourts(): boolean {
+    return this.authService.isCourtPlan();
+  }
+
   joinMatch(matchId: number): void {
+    if (!this.canUsePlayerFeatures) return;
     const userId = this.authService.getUserId();
     if (!userId) {
       this.router.navigate(['/login']);

@@ -1,0 +1,15 @@
+package com.partidoya.platform.courts.application.queryservices;
+
+import com.partidoya.platform.courts.domain.model.aggregates.Court;
+import com.partidoya.platform.courts.domain.model.queries.GetCourtByIdQuery;
+import com.partidoya.platform.courts.domain.model.queries.GetManagedCourtsQuery;
+import com.partidoya.platform.courts.domain.model.queries.SearchPublishedCourtsQuery;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface CourtQueryService {
+    List<Court> handle(SearchPublishedCourtsQuery query);
+    Optional<Court> handle(GetCourtByIdQuery query);
+    List<Court> handle(GetManagedCourtsQuery query);
+}

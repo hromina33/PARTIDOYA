@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './shared/guards/auth.guard';
+import { guestGuard } from './shared/guards/guest.guard';
+import { courtAdminGuard, playerGuard } from './shared/guards/plan.guard';
 
 export const routes: Routes = [
   {
@@ -8,6 +10,7 @@ export const routes: Routes = [
   },
   {
     path: 'register',
+    canActivate: [guestGuard],
     loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
   },
   {
@@ -28,26 +31,47 @@ export const routes: Routes = [
   },
   {
     path: 'home',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent)
   },
   {
     path: 'deportes',
+    canActivate: [playerGuard],
     loadComponent: () => import('./pages/deportes/deportes.component').then(m => m.DeportesComponent)
   },
   {
+    path: 'canchas',
+    canActivate: [playerGuard],
+    loadComponent: () => import('./pages/canchas/canchas.component').then(m => m.CanchasComponent)
+  },
+  {
+    path: 'canchas/:id',
+    canActivate: [playerGuard],
+    loadComponent: () => import('./pages/cancha-detail/cancha-detail.component').then(m => m.CanchaDetailComponent)
+  },
+  {
+    path: 'admin-canchas',
+    canActivate: [courtAdminGuard],
+    loadComponent: () => import('./pages/admin-canchas/admin-canchas.component').then(m => m.AdminCanchasComponent)
+  },
+  {
     path: 'mis-partidos',
-    canActivate: [authGuard],
+    canActivate: [playerGuard],
     loadComponent: () => import('./pages/mis-partidos/mis-partidos.component').then(m => m.MisPartidosComponent)
   },
   {
     path: 'partidos/:id',
-    canActivate: [authGuard],
+    canActivate: [playerGuard],
     loadComponent: () => import('./pages/match-detail/match-detail.component').then(m => m.MatchDetailComponent)
   },
   {
     path: 'mi-perfil',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/mi-perfil/mi-perfil.component').then(m => m.MiPerfilComponent)
+  },
+  {
+    path: 'profile',
+    redirectTo: 'mi-perfil'
   },
   {
     path: '**',

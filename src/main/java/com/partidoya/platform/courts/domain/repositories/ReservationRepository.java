@@ -1,0 +1,17 @@
+package com.partidoya.platform.courts.domain.repositories;
+
+import com.partidoya.platform.courts.domain.model.aggregates.Reservation;
+import com.partidoya.platform.courts.domain.model.valueobjects.CourtId;
+import com.partidoya.platform.courts.domain.model.valueobjects.ReservationId;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Optional;
+
+public interface ReservationRepository {
+    Optional<Reservation> findById(ReservationId id);
+    boolean existsOverlapping(CourtId courtId, LocalDate date, LocalTime startTime, LocalTime endTime);
+    List<Reservation> findByCourtId(CourtId courtId);
+    Reservation save(Reservation reservation);
+}

@@ -1,0 +1,115 @@
+<section class="court-detail-page">
+  <div class="container">
+    <a routerLink="/canchas" class="back-link">Volver a canchas</a>
+
+    @if (loading) {
+      <div class="state-box">Cargando cancha...</div>
+    } @else if (errorMessage && !court) {
+      <div class="state-box state-error">{{ errorMessage }}</div>
+    } @else if (court) {
+      <div class="detail-hero">
+        <div class="hero-image" [style.backgroundImage]="primaryImage ? 'url(' + primaryImage + ')' : null"></div>
+        <div class="hero-copy">
+          <span>{{ court.sports.join(' · ') }}</span>
+          <h1>{{ court.name }}</h1>
+          @if (court.complexName) {
+            <p>{{ court.complexName }}</p>
+          }
+          <strong>S/ {{ court.pricePerHour | number:'1.2-2' }} por hora</strong>
+        </div>
+      </div>
+
+      <div class="detail-layout">
+        <main class="detail-main">
+          <section class="glass-card">
+            <h2>Información</h2>
+            @if (court.description) {
+              <p>{{ court.description }}</p>
+            }
+            <div class="info-grid">
+              <div><span>Dirección</span><strong>{{ court.address }}</strong></div>
+              <div><span>Distrito</span><strong>{{ court.district }}</strong></div>
+              <div><span>Estado</span><strong>{{ court.availableForReservations ? 'Disponible' : 'No disponible' }}</strong></div>
+              <div><span>Coordenadas</span><strong>{{ court.latitude ?? 'Sin dato' }}, {{ court.longitude ?? 'Sin dato' }}</strong></div>
+            </div>
+          </section>
+
+          <section class="glass-card">
+            <h2>Mapa</h2>
+            <div #mapContainer class="map-canvas"></div>
+            @if (mapError) {
+              <p class="map-error">{{ mapError }}</p>
+            }
+          </section>
+
+          <section class="glass-card">
+            <h2>Servicios y características</h2>
+            <div class="chips">
+              @for (service of court.services; track service) {
+                <span>{{ service }}</span>
+              }
+              @for (feature of court.features; track feature) {
+                <span>{{ feature }}</span>
+              }
+            </div>
+          </section>
+        </main>
+
+        <aside class="reservation-panel">
+          <h2>Pagar y reservar</h2>
+          @if (errorMessage) {
+            <div class="alert alert-error">{{ errorMessage }}</div>
+          }
+          @if (successMessage) {
+            <div class="alert alert-success">{{ successMessage }}</div>
+          }
+          <label>
+            Fecha
+            <input type="date" [(ngModel)]="selectedDate">
+          </label>
+          <label>
+            Horario
+            <select [(ngModel)]="selectedSchedule">
+              <option value="">Selecciona</option>
+              @for (schedule of court.schedules; track schedule) {
+                <option [value]="schedule">{{ schedule }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            Método de pago
+            <select [(ngModel)]="paymentMethod">
+              <option value="Tarjeta simulada">Tarjeta simulada</option>
+              <option value="Yape simulado">Yape simulado</option>
+            </select>
+          </label>
+          <div class="reservation-summary">
+            <span>Cancha</span><strong>{{ court.name }}</strong>
+            <span>Precio</span><strong>S/ {{ court.pricePerHour | number:'1.2-2' }}</strong>
+          </div>
+          <button type="button" [disabled]="!canReserve" (click)="reserve()">
+            {{ reserving ? 'Procesando...' : 'Confirmar pago y reserva' }}
+          </button>
+          @if (reservation) {
+            <a
+              routerLink="/deportes"
+              class="continue-link"
+              [queryParams]="{
+                create: true,
+                reservationId: reservation.id,
+                sport: primarySport,
+                title: reservationTitle,
+                address: court.address,
+                price: court.pricePerHour,
+                matchDate: reservationMatchDate,
+                latitude: court.latitude,
+                longitude: court.longitude
+              }">
+              Continuar con la pichanga
+            </a>
+          }
+        </aside>
+      </div>
+    }
+  </div>
+</section>

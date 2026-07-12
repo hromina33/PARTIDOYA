@@ -1,0 +1,60 @@
+<section class="courts-page">
+  <div class="container">
+    <header class="courts-header">
+      <span>Canchas</span>
+      <h1>Reserva una cancha para tu próxima pichanga</h1>
+      <p>Filtra por deporte o distrito y elige una cancha publicada por administradores con plan activo.</p>
+    </header>
+
+    <div class="filters-bar">
+      <label>
+        Deporte
+        <select [(ngModel)]="sportFilter">
+          <option value="">Todos</option>
+          @for (sport of sports; track sport) {
+            <option [value]="sport">{{ sport }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Distrito
+        <input type="text" [(ngModel)]="districtFilter" placeholder="Ej: Miraflores">
+      </label>
+      <button type="button" class="btn-primary-filter" (click)="loadCourts()">Filtrar</button>
+      <button type="button" class="btn-clear-filter" (click)="clearFilters()">Limpiar</button>
+    </div>
+
+    @if (loading) {
+      <div class="state-box">Cargando canchas...</div>
+    } @else if (errorMessage) {
+      <div class="state-box state-error">{{ errorMessage }}</div>
+    } @else if (courts.length === 0) {
+      <div class="state-box">No hay canchas publicadas con esos filtros.</div>
+    } @else {
+      <div class="courts-grid">
+        @for (court of courts; track trackCourt($index, court)) {
+          <article class="court-card">
+            <div class="court-image" [style.backgroundImage]="court.mainImageUrl ? 'url(' + court.mainImageUrl + ')' : null">
+              @if (!court.mainImageUrl) {
+                <span>PartidoYA</span>
+              }
+            </div>
+            <div class="court-body">
+              <div class="court-topline">
+                <span>{{ court.sports[0] || 'Multideporte' }}</span>
+                <strong>S/ {{ court.pricePerHour | number:'1.2-2' }}</strong>
+              </div>
+              <h2>{{ court.name }}</h2>
+              @if (court.complexName) {
+                <p class="complex">{{ court.complexName }}</p>
+              }
+              <p class="district">{{ court.district }}</p>
+              <span class="availability">{{ court.availableForReservations ? 'Disponible para reservas' : 'No disponible' }}</span>
+              <a [routerLink]="['/canchas', court.id]" class="court-link">Ver detalles y reservar</a>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</section>

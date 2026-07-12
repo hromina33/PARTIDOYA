@@ -1,7 +1,7 @@
 package com.partidoya.platform.matches.application.internal.commandservices;
 
-import com.partidoya.platform.iam.domain.model.valueobjects.Role;
 import com.partidoya.platform.iam.domain.repositories.UserRepository;
+import com.partidoya.platform.iam.domain.services.PlanPolicy;
 import com.partidoya.platform.matches.application.commandservices.MatchCommandService;
 import com.partidoya.platform.matches.domain.model.aggregates.Match;
 import com.partidoya.platform.matches.domain.model.commands.CancelMatchCommand;
@@ -27,8 +27,8 @@ public class MatchCommandServiceImpl implements MatchCommandService {
     public Match handle(CreateMatchCommand command) {
         var organizer = userRepository.findById(command.organizerId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", command.organizerId().value().toString()));
-        if (organizer.getRole() != Role.ADMIN_CANCHA) {
-            throw new ForbiddenActionException("Only ADMIN_CANCHA accounts can create matches");
+        if (!PlanPolicy.canUsePlayerFeatures(organizer)) {
+            throw new ForbiddenActionException("Only player accounts can create matches");
         }
         var match = new Match(command);
         return matchRepository.save(match);
@@ -38,6 +38,11 @@ public class MatchCommandServiceImpl implements MatchCommandService {
     public Match handle(JoinMatchCommand command) {
         var match = matchRepository.findById(command.matchId())
                 .orElseThrow(() -> new ResourceNotFoundException("Match", command.matchId().value().toString()));
+        var user = userRepository.findById(command.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", command.userId().value().toString()));
+        if (!PlanPolicy.canUsePlayerFeatures(user)) {
+            throw new ForbiddenActionException("Only player accounts can join matches");
+        }
         match.join(command.userId());
         return matchRepository.save(match);
     }
@@ -54,6 +59,11 @@ public class MatchCommandServiceImpl implements MatchCommandService {
     public Match handle(LeaveMatchCommand command) {
         var match = matchRepository.findById(command.matchId())
                 .orElseThrow(() -> new ResourceNotFoundException("Match", command.matchId().value().toString()));
+        var user = userRepository.findById(command.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", command.userId().value().toString()));
+        if (!PlanPolicy.canUsePlayerFeatures(user)) {
+            throw new ForbiddenActionException("Only player accounts can leave matches");
+        }
         match.leave(command.userId());
         return matchRepository.save(match);
     }

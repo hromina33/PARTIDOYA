@@ -2,12 +2,15 @@
   <div class="container navbar-inner">
     <a routerLink="/" class="navbar-brand">PartidoYA</a>
     <div class="navbar-links">
-      <a routerLink="/home" class="nav-link">Inicio</a>
-      <a routerLink="/deportes" class="nav-link">Deportes</a>
-      <a routerLink="/contactanos" class="nav-link">Contáctanos</a>
-      @if (isLoggedIn) {
-        <a routerLink="/mis-partidos" class="nav-link">Mis Partidos</a>
+      <a routerLink="/home" class="nav-link">Dashboard</a>
+      @if (!isLoggedIn || canUsePlayerFeatures) {
+        <a routerLink="/deportes" class="nav-link">Partidos</a>
+        <a routerLink="/canchas" class="nav-link">Canchas</a>
       }
+      @if (canManageCourts) {
+        <a routerLink="/admin-canchas" class="nav-link">Administrar canchas</a>
+      }
+      <a routerLink="/contactanos" class="nav-link">Contáctanos</a>
     </div>
     <div class="navbar-actions">
       @if (isLoggedIn) {
@@ -23,8 +26,11 @@
           </button>
           @if (userMenuOpen) {
             <div class="user-dropdown" role="menu">
+              @if (canManageCourts) {
+                <a routerLink="/admin-canchas" class="dropdown-item" role="menuitem" (click)="closeUserMenu()">Administrar canchas</a>
+              }
               <a routerLink="/mi-perfil" class="dropdown-item" role="menuitem" (click)="closeUserMenu()">Mi perfil</a>
-              <button type="button" class="dropdown-item" role="menuitem" (click)="logout()">Cerrar sesion</button>
+              <button type="button" class="dropdown-item" role="menuitem" (click)="logout()">Cerrar sesión</button>
             </div>
           }
         </div>

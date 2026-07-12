@@ -20,9 +20,9 @@
         <button class="sport-tab" [class.active]="sportFilter === 'Tenis'"
                 (click)="sportFilter = 'Tenis'; onFilterChange()">Tenis</button>
       </div>
-      @if (isAdminCancha) {
-        <button class="btn-create" (click)="toggleCreateForm()">
-          {{ showCreateForm ? 'Cancelar' : '+ Crear partido' }}
+      @if (canUsePlayerFeatures) {
+        <button class="btn-create" (click)="showCreateForm ? toggleCreateForm() : startCreateFlow()">
+          {{ showCreateForm ? 'Cancelar' : '+ Crear desde cancha' }}
         </button>
       }
     </div>
@@ -36,7 +36,7 @@
       </div>
     }
 
-    @if (showCreateForm && isAdminCancha) {
+    @if (showCreateForm && canUsePlayerFeatures) {
       <div class="modal-overlay" (click)="toggleCreateForm()">
         <div class="create-form-card" (click)="$event.stopPropagation()">
           <div class="modal-header">
@@ -144,7 +144,7 @@
               </div>
             </div>
             <div class="card-actions">
-              @if (!hasJoined(match) && match.availableSlots > 0) {
+              @if (canUsePlayerFeatures && !hasJoined(match) && match.availableSlots > 0) {
                 <button class="btn-join" (click)="joinMatch(match.id)">Unirme</button>
               }
               @if (hasJoined(match)) {

@@ -32,6 +32,14 @@ export class NavbarComponent {
     return this.authService.getUserName();
   }
 
+  get canManageCourts(): boolean {
+    return this.authService.isCourtPlan();
+  }
+
+  get canUsePlayerFeatures(): boolean {
+    return this.authService.isPlayerPlan();
+  }
+
   toggleUserMenu(): void {
     this.userMenuOpen = !this.userMenuOpen;
   }

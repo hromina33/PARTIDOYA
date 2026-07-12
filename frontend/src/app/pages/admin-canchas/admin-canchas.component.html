@@ -1,0 +1,141 @@
+<section class="admin-courts-page">
+  <div class="container">
+    <header class="admin-header">
+      <div>
+        <span>Panel de canchas</span>
+        <h1>Administra tus canchas</h1>
+        <p>Publica tus espacios, horarios y precios para que los jugadores puedan reservar.</p>
+      </div>
+      <a routerLink="/home" class="back-link">Volver al dashboard</a>
+    </header>
+
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage }}</div>
+    }
+    @if (successMessage) {
+      <div class="alert alert-success">{{ successMessage }}</div>
+    }
+
+    <div class="admin-layout">
+      <form class="court-form" (submit)="$event.preventDefault(); saveCourt()">
+        <div class="form-title">
+          <h2>{{ editingCourtId ? 'Editar cancha' : 'Nueva cancha' }}</h2>
+          @if (editingCourtId) {
+            <button type="button" class="link-button" (click)="resetForm()">Cancelar edición</button>
+          }
+        </div>
+
+        <label>
+          Nombre
+          <input type="text" name="name" [(ngModel)]="form.name" required>
+        </label>
+
+        <label>
+          Complejo
+          <input type="text" name="complexName" [(ngModel)]="form.complexName">
+        </label>
+
+        <label>
+          Descripción
+          <textarea name="description" rows="3" [(ngModel)]="form.description"></textarea>
+        </label>
+
+        <div class="form-grid">
+          <label>
+            Distrito
+            <input type="text" name="district" [(ngModel)]="form.district" required>
+          </label>
+          <label>
+            Precio por hora
+            <input type="number" name="pricePerHour" min="0" step="0.10" [(ngModel)]="form.pricePerHour" required>
+          </label>
+        </div>
+
+        <label>
+          Dirección
+          <input type="text" name="address" [(ngModel)]="form.address" required>
+        </label>
+
+        <div class="form-grid">
+          <label>
+            Latitud
+            <input type="number" name="latitude" step="0.000001" [(ngModel)]="form.latitude">
+          </label>
+          <label>
+            Longitud
+            <input type="number" name="longitude" step="0.000001" [(ngModel)]="form.longitude">
+          </label>
+        </div>
+
+        <label>
+          Deportes
+          <input type="text" name="sports" [(ngModel)]="sportsInput" placeholder="Fútbol, Voleibol" required>
+        </label>
+
+        <label>
+          Horarios
+          <input type="text" name="schedules" [(ngModel)]="schedulesInput" placeholder="18:00-19:00, 19:00-20:00" required>
+        </label>
+
+        <label>
+          Imagen principal
+          <input type="url" name="mainImageUrl" [(ngModel)]="form.mainImageUrl" placeholder="https://...">
+        </label>
+
+        <label>
+          Galería
+          <input type="text" name="imageUrls" [(ngModel)]="imageUrlsInput" placeholder="URLs separadas por coma">
+        </label>
+
+        <label>
+          Servicios
+          <input type="text" name="services" [(ngModel)]="servicesInput" placeholder="Vestidores, Estacionamiento">
+        </label>
+
+        <label>
+          Características
+          <input type="text" name="features" [(ngModel)]="featuresInput" placeholder="Grass sintético, Techada">
+        </label>
+
+        <button type="submit" class="primary-action" [disabled]="saving">
+          {{ saving ? 'Guardando...' : (editingCourtId ? 'Guardar cambios' : 'Crear cancha') }}
+        </button>
+      </form>
+
+      <main class="courts-panel">
+        <div class="panel-header">
+          <h2>Tus canchas</h2>
+          <span>{{ courts.length }} registradas</span>
+        </div>
+
+        @if (loading) {
+          <div class="state-box">Cargando canchas...</div>
+        } @else if (courts.length === 0) {
+          <div class="state-box">Aún no tienes canchas registradas.</div>
+        } @else {
+          <div class="managed-list">
+            @for (court of courts; track trackCourt($index, court)) {
+              <article class="managed-card">
+                <div class="managed-image" [style.backgroundImage]="court.mainImageUrl ? 'url(' + court.mainImageUrl + ')' : null"></div>
+                <div class="managed-body">
+                  <div class="managed-topline">
+                    <span [class.is-published]="court.published">{{ court.published ? 'Publicada' : 'Borrador' }}</span>
+                    <strong>S/ {{ court.pricePerHour | number:'1.2-2' }}</strong>
+                  </div>
+                  <h3>{{ court.name }}</h3>
+                  <p>{{ court.district }} · {{ court.sports.join(', ') }}</p>
+                  <div class="managed-actions">
+                    <button type="button" class="secondary-action" (click)="editCourt(court)">Editar</button>
+                    <button type="button" class="primary-action small" (click)="togglePublication(court)">
+                      {{ court.published ? 'Despublicar' : 'Publicar' }}
+                    </button>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </main>
+    </div>
+  </div>
+</section>
