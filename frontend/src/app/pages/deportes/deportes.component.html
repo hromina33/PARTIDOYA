@@ -85,9 +85,27 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="price">Costo de la cancha (S/, opcional)</label>
-                <input id="price" type="number" min="0" step="0.10" [(ngModel)]="newMatch.price" name="price" placeholder="Ej: 60.00">
+                <input id="price" type="number" min="0" step="0.10" [(ngModel)]="newMatch.price" name="price" placeholder="Ej: 60.00" [readonly]="!!newMatch.courtReservationId">
               </div>
             </div>
+            <div class="form-row">
+              <label class="payment-toggle">
+                <input type="checkbox" [(ngModel)]="newMatch.requiresPlayerPayment" name="requiresPlayerPayment">
+                Solicitar pago a los jugadores para unirse
+              </label>
+            </div>
+            @if (newMatch.requiresPlayerPayment) {
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="yapePhone">Numero de Yape</label>
+                  <input id="yapePhone" type="tel" [(ngModel)]="newMatch.yapePhone" name="yapePhone" placeholder="999999999" required>
+                </div>
+                <div class="form-group">
+                  <label>Pago por jugador</label>
+                  <input type="text" [value]="'S/ ' + (paymentPerPlayer | number:'1.2-2')" readonly>
+                </div>
+              </div>
+            }
             <button type="submit" class="btn-submit">Crear partido</button>
           </form>
         </div>
@@ -133,6 +151,12 @@
                   <span>S/ {{ match.price | number:'1.2-2' }}</span>
                 </div>
               }
+              @if (match.requiresPlayerPayment && match.playerPaymentAmount !== null) {
+                <div class="info-row">
+                  <span class="info-label">Pago por jugador</span>
+                  <span>S/ {{ match.playerPaymentAmount | number:'1.2-2' }}</span>
+                </div>
+              }
             </div>
             <div class="slots-section">
               <div class="slots-bar">
@@ -144,8 +168,11 @@
               </div>
             </div>
             <div class="card-actions">
-              @if (canUsePlayerFeatures && !hasJoined(match) && match.availableSlots > 0) {
+              @if (canUsePlayerFeatures && !match.requiresPlayerPayment && !hasJoined(match) && match.availableSlots > 0) {
                 <button class="btn-join" (click)="joinMatch(match.id)">Unirme</button>
+              }
+              @if (canUsePlayerFeatures && match.requiresPlayerPayment && !hasJoined(match) && match.availableSlots > 0) {
+                <a class="btn-join" [routerLink]="['/partidos', match.id]">Adjuntar comprobante</a>
               }
               @if (hasJoined(match)) {
                 <span class="badge-joined">Inscrito</span>

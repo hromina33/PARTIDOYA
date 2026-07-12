@@ -22,6 +22,9 @@ public final class ReservationPersistenceAssembler {
                 entity.getStartTime(),
                 entity.getEndTime(),
                 entity.getPrice(),
+                entity.getCurrency(),
+                entity.getProviderReference(),
+                entity.getPaymentIdempotencyKey(),
                 ReservationStatus.valueOf(entity.getStatus()),
                 PaymentStatus.valueOf(entity.getPaymentStatus()),
                 entity.getReservationCreatedAt());
@@ -37,6 +40,9 @@ public final class ReservationPersistenceAssembler {
         entity.setStartTime(reservation.getStartTime());
         entity.setEndTime(reservation.getEndTime());
         entity.setPrice(reservation.getPrice());
+        entity.setCurrency(reservation.getCurrency());
+        entity.setProviderReference(reservation.getProviderReference());
+        entity.setPaymentIdempotencyKey(reservation.getPaymentIdempotencyKey());
         entity.setStatus(reservation.getStatus().name());
         entity.setPaymentStatus(reservation.getPaymentStatus().name());
         entity.setReservationCreatedAt(reservation.getCreatedAt());

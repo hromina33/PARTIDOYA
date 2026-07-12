@@ -23,6 +23,7 @@ export class DeportesComponent implements OnInit {
 
   newMatch: CreateMatchRequest = {
     organizerId: 0,
+    courtReservationId: null,
     sport: '',
     title: '',
     description: null,
@@ -31,7 +32,9 @@ export class DeportesComponent implements OnInit {
     totalSlots: 10,
     price: null,
     latitude: null,
-    longitude: null
+    longitude: null,
+    requiresPlayerPayment: false,
+    yapePhone: null
   };
 
   constructor(
@@ -159,6 +162,11 @@ export class DeportesComponent implements OnInit {
     return this.authService.isAdminCancha();
   }
 
+  get paymentPerPlayer(): number {
+    if (!this.newMatch.requiresPlayerPayment || !this.newMatch.price || !this.newMatch.totalSlots) return 0;
+    return Math.round((this.newMatch.price / this.newMatch.totalSlots) * 100) / 100;
+  }
+
   get canUsePlayerFeatures(): boolean {
     return this.authService.isPlayerPlan();
   }
@@ -190,6 +198,7 @@ export class DeportesComponent implements OnInit {
   private resetNewMatch(): void {
     this.newMatch = {
       organizerId: this.authService.getUserId() || 0,
+      courtReservationId: null,
       sport: this.sportFilter,
       title: '',
       description: null,
@@ -198,7 +207,9 @@ export class DeportesComponent implements OnInit {
       totalSlots: 10,
       price: null,
       latitude: null,
-      longitude: null
+      longitude: null,
+      requiresPlayerPayment: false,
+      yapePhone: null
     };
   }
 
@@ -206,6 +217,7 @@ export class DeportesComponent implements OnInit {
     this.showCreateForm = true;
     this.newMatch = {
       organizerId: this.authService.getUserId() || 0,
+      courtReservationId: params['reservationId'] ? Number(params['reservationId']) : null,
       sport: params['sport'] || this.sportFilter,
       title: params['title'] || '',
       description: params['reservationId'] ? `Reserva #${params['reservationId']} confirmada` : null,
@@ -214,7 +226,9 @@ export class DeportesComponent implements OnInit {
       totalSlots: 10,
       price: params['price'] ? Number(params['price']) : null,
       latitude: params['latitude'] ? Number(params['latitude']) : null,
-      longitude: params['longitude'] ? Number(params['longitude']) : null
+      longitude: params['longitude'] ? Number(params['longitude']) : null,
+      requiresPlayerPayment: false,
+      yapePhone: null
     };
     setTimeout(() => this.initAddressAutocomplete(), 0);
   }

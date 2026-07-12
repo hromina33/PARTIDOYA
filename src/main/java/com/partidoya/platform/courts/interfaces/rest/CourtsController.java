@@ -93,7 +93,7 @@ public class CourtsController {
     public ResponseEntity<ReservationResource> reserveCourt(@PathVariable Long courtId, @RequestBody ReserveCourtResource resource) {
         var reservation = courtCommandService.handle(new ReserveCourtCommand(new CourtId(courtId),
                 new UserId(resource.userId()), resource.date(), resource.startTime(), resource.endTime(),
-                resource.paymentMethod()));
+                resource.paymentMethod(), resource.culqiToken(), resource.payerEmail(), resource.idempotencyKey()));
         return ResponseEntity.status(HttpStatus.CREATED).body(ReservationResourceFromEntityAssembler.toResourceFromEntity(reservation));
     }
 }

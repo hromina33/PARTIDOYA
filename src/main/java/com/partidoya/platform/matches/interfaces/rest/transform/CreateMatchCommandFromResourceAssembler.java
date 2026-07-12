@@ -21,6 +21,7 @@ public final class CreateMatchCommandFromResourceAssembler {
     public static CreateMatchCommand toCommandFromResource(CreateMatchResource resource) {
         return new CreateMatchCommand(
                 new UserId(resource.organizerId()),
+                resource.courtReservationId(),
                 resource.sport(),
                 new MatchTitle(resource.title()),
                 new MatchDescription(resource.description()),
@@ -29,6 +30,8 @@ public final class CreateMatchCommandFromResourceAssembler {
                 new TotalSlots(resource.totalSlots()),
                 new MatchPrice(resource.price() != null ? BigDecimal.valueOf(resource.price()) : null),
                 resource.latitude(),
-                resource.longitude());
+                resource.longitude(),
+                Boolean.TRUE.equals(resource.requiresPlayerPayment()),
+                resource.yapePhone());
     }
 }

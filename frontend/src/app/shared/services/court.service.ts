@@ -52,6 +52,8 @@ export interface ReservationResponse {
   startTime: string;
   endTime: string;
   price: number;
+  currency: string;
+  providerReference: string | null;
   status: string;
   paymentStatus: string;
   createdAt: string;
@@ -90,13 +92,26 @@ export class CourtService {
     return this.http.post<CourtResponse>(`${this.apiUrl}/${id}/publication`, { requesterId, published });
   }
 
-  reserveCourt(id: number, userId: number, date: string, startTime: string, endTime: string, paymentMethod: string): Observable<ReservationResponse> {
+  reserveCourt(
+    id: number,
+    userId: number,
+    date: string,
+    startTime: string,
+    endTime: string,
+    paymentMethod: string,
+    culqiToken: string,
+    payerEmail: string,
+    idempotencyKey: string
+  ): Observable<ReservationResponse> {
     return this.http.post<ReservationResponse>(`${this.apiUrl}/${id}/reservations`, {
       userId,
       date,
       startTime,
       endTime,
-      paymentMethod
+      paymentMethod,
+      culqiToken,
+      payerEmail,
+      idempotencyKey
     });
   }
 }

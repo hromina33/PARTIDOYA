@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface ReservationRepository {
     Optional<Reservation> findById(ReservationId id);
     boolean existsOverlapping(CourtId courtId, LocalDate date, LocalTime startTime, LocalTime endTime);
+    boolean existsByPaymentIdempotencyKey(String paymentIdempotencyKey);
+    boolean existsByProviderReference(String providerReference);
     List<Reservation> findByCourtId(CourtId courtId);
     Reservation save(Reservation reservation);
 }

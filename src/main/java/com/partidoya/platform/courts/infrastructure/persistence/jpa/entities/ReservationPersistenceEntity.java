@@ -37,6 +37,15 @@ public class ReservationPersistenceEntity extends AuditableAbstractPersistenceEn
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(nullable = false, length = 3)
+    private String currency;
+
+    @Column(name = "provider_reference", unique = true)
+    private String providerReference;
+
+    @Column(name = "payment_idempotency_key", unique = true)
+    private String paymentIdempotencyKey;
+
     @Column(nullable = false, length = 30)
     private String status;
 

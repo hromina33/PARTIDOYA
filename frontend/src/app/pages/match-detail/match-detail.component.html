@@ -71,6 +71,12 @@
               <span class="info-card-value">S/ {{ match.price | number:'1.2-2' }}</span>
             </div>
           }
+          @if (match.requiresPlayerPayment && match.playerPaymentAmount !== null) {
+            <div class="info-card glass-card">
+              <span class="info-card-label">Pago por jugador</span>
+              <span class="info-card-value">S/ {{ match.playerPaymentAmount | number:'1.2-2' }}</span>
+            </div>
+          }
         </div>
 
         <div class="slots-section">
@@ -84,7 +90,7 @@
         </div>
 
         <div class="actions-section">
-          @if (!isOrganizer && !hasJoined && match.availableSlots > 0 && match.status === 'OPEN') {
+          @if (!isOrganizer && !hasJoined && !match.requiresPlayerPayment && match.availableSlots > 0 && match.status === 'OPEN') {
             <button class="btn-join" (click)="joinMatch()">Unirme al partido</button>
           }
           @if (hasJoined && !isOrganizer) {
@@ -103,6 +109,61 @@
             <span class="badge-cancelled">Este partido fue cancelado</span>
           }
         </div>
+
+        @if (match.requiresPlayerPayment && !isOrganizer && !hasJoined) {
+          <div class="glass-card payment-proof-card">
+            <h3>Pago por Yape</h3>
+            <p>Yapea el monto exacto y adjunta tu comprobante para que el organizador lo revise.</p>
+            <div class="proof-summary">
+              <span>Costo total</span><strong>S/ {{ match.price | number:'1.2-2' }}</strong>
+              <span>Monto a pagar</span><strong>S/ {{ match.playerPaymentAmount | number:'1.2-2' }}</strong>
+              <span>Numero de Yape</span><strong>{{ match.yapePhone }}</strong>
+              <span>Organizador</span><strong>Jugador #{{ match.organizerId }}</strong>
+            </div>
+            @if (currentUserJoinRequest) {
+              <p class="proof-status">Estado: {{ currentUserJoinRequest.status }}</p>
+              @if (currentUserJoinRequest.rejectionReason) {
+                <p class="proof-status proof-rejected">Motivo: {{ currentUserJoinRequest.rejectionReason }}</p>
+              }
+            }
+            @if (!currentUserJoinRequest || currentUserJoinRequest.status === 'REJECTED') {
+              <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onProofSelected($event)">
+              @if (proofPreview) {
+                <img [src]="proofPreview" class="proof-preview" alt="Vista previa del comprobante">
+              }
+              <button class="btn-join" [disabled]="!proofFile || proofSubmitting" (click)="submitProof()">
+                {{ proofSubmitting ? 'Enviando...' : 'Enviar comprobante' }}
+              </button>
+            }
+            @if (proofMessage) {
+              <p class="proof-status">{{ proofMessage }}</p>
+            }
+          </div>
+        }
+
+        @if (match.requiresPlayerPayment && isOrganizer) {
+          <div class="glass-card payment-proof-card">
+            <h3>Comprobantes pendientes</h3>
+            @if (joinRequests.length === 0) {
+              <p>Aun no hay comprobantes por revisar.</p>
+            } @else {
+              @for (request of joinRequests; track request.id) {
+                <div class="proof-review">
+                  <div>
+                    <strong>Jugador #{{ request.playerId }}</strong>
+                    <span>S/ {{ request.amount | number:'1.2-2' }} · {{ request.status }}</span>
+                  </div>
+                  <a [href]="proofUrl(request)" target="_blank" rel="noopener">Ver comprobante</a>
+                  @if (request.status === 'PENDING_PAYMENT_VERIFICATION') {
+                    <button class="btn-join" (click)="approveRequest(request)">Aprobar</button>
+                    <input type="text" [(ngModel)]="rejectReason" placeholder="Motivo opcional">
+                    <button class="btn-leave" (click)="rejectRequest(request)">Rechazar</button>
+                  }
+                </div>
+              }
+            }
+          </div>
+        }
       </div>
 
       <div class="detail-sidebar">

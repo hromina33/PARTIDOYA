@@ -12,6 +12,9 @@ public record ReserveCourtCommand(
         LocalDate date,
         LocalTime startTime,
         LocalTime endTime,
-        String paymentMethod
+        String paymentMethod,
+        String culqiToken,
+        String payerEmail,
+        String idempotencyKey
 ) {
 }

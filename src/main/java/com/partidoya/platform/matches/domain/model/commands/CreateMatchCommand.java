@@ -13,6 +13,7 @@ import java.util.Objects;
 
 public record CreateMatchCommand(
         UserId organizerId,
+        Long courtReservationId,
         String sport,
         MatchTitle title,
         MatchDescription description,
@@ -21,7 +22,9 @@ public record CreateMatchCommand(
         TotalSlots totalSlots,
         MatchPrice price,
         Double latitude,
-        Double longitude) {
+        Double longitude,
+        boolean requiresPlayerPayment,
+        String yapePhone) {
     public CreateMatchCommand {
         Objects.requireNonNull(organizerId, "organizerId cannot be null");
         Objects.requireNonNull(sport, "sport cannot be null");

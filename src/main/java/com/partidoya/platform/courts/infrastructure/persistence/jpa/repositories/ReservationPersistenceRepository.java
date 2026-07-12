@@ -12,5 +12,9 @@ public interface ReservationPersistenceRepository extends JpaRepository<Reservat
     boolean existsByCourtIdAndDateAndStartTimeLessThanAndEndTimeGreaterThanAndStatusIn(
             Long courtId, LocalDate date, LocalTime endTime, LocalTime startTime, Collection<String> statuses);
 
+    boolean existsByPaymentIdempotencyKey(String paymentIdempotencyKey);
+
+    boolean existsByProviderReference(String providerReference);
+
     List<ReservationPersistenceEntity> findByCourtId(Long courtId);
 }

@@ -1,14 +1,16 @@
 import { Component, OnInit, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MatchService, MatchResponse } from '../../shared/services/match.service';
+import { FormsModule } from '@angular/forms';
+import { MatchService, MatchResponse, PlayerJoinRequestResponse } from '../../shared/services/match.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { MapsLoaderService } from '../../shared/services/maps-loader.service';
 import { GeolocationService } from '../../shared/services/geolocation.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-match-detail',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './match-detail.component.html',
   styleUrl: './match-detail.component.scss'
 })
@@ -23,6 +25,12 @@ export class MatchDetailComponent implements OnInit {
   mapError = '';
   routeDuration = '';
   routeDistance = '';
+  joinRequests: PlayerJoinRequestResponse[] = [];
+  proofFile: File | null = null;
+  proofPreview: string | null = null;
+  proofSubmitting = false;
+  proofMessage = '';
+  rejectReason = '';
 
   constructor(
     private matchService: MatchService,
@@ -51,6 +59,7 @@ export class MatchDetailComponent implements OnInit {
         this.mapLoading = true;
         this.cdr.detectChanges();
         setTimeout(() => this.initMap(), 0);
+        this.loadJoinRequests();
       },
       error: () => {
         this.errorMessage = 'Partido no encontrado.';
@@ -67,6 +76,11 @@ export class MatchDetailComponent implements OnInit {
   get hasJoined(): boolean {
     const userId = this.authService.getUserId();
     return userId !== null && (this.match?.participantIds.includes(userId) ?? false);
+  }
+
+  get currentUserJoinRequest(): PlayerJoinRequestResponse | null {
+    const userId = this.currentUserId;
+    return this.joinRequests.find(request => request.playerId === userId) || null;
   }
 
   get filledPercent(): number {
@@ -153,6 +167,86 @@ export class MatchDetailComponent implements OnInit {
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'No se pudo unir al partido.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  proofUrl(request: PlayerJoinRequestResponse): string {
+    return `${environment.apiUrl.replace('/api/v1', '')}${request.proofUrl}`;
+  }
+
+  onProofSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] || null;
+    this.proofMessage = '';
+    this.proofFile = null;
+    this.proofPreview = null;
+    if (!file) return;
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type) || file.size === 0 || file.size > 5 * 1024 * 1024) {
+      this.proofMessage = 'Adjunta una imagen JPG, PNG o WEBP de maximo 5 MB.';
+      return;
+    }
+    this.proofFile = file;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.proofPreview = reader.result as string;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  submitProof(): void {
+    if (!this.match || !this.currentUserId || !this.proofFile) return;
+    this.proofSubmitting = true;
+    this.proofMessage = '';
+    this.matchService.submitJoinProof(this.match.id, this.currentUserId, this.proofFile).subscribe({
+      next: () => {
+        this.proofSubmitting = false;
+        this.proofFile = null;
+        this.proofPreview = null;
+        this.proofMessage = 'El pago esta siendo verificado.';
+        this.loadJoinRequests();
+      },
+      error: (err) => {
+        this.proofSubmitting = false;
+        this.proofMessage = err.error?.message || 'No se pudo enviar el comprobante.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  approveRequest(request: PlayerJoinRequestResponse): void {
+    if (!this.match || !this.currentUserId || !confirm('Aprobar este comprobante?')) return;
+    this.matchService.approveJoinRequest(this.match.id, request.id, this.currentUserId).subscribe({
+      next: () => this.loadMatch(this.match!.id),
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'No se pudo aprobar el comprobante.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  rejectRequest(request: PlayerJoinRequestResponse): void {
+    if (!this.match || !this.currentUserId || !confirm('Rechazar este comprobante?')) return;
+    this.matchService.rejectJoinRequest(this.match.id, request.id, this.currentUserId, this.rejectReason).subscribe({
+      next: () => {
+        this.rejectReason = '';
+        this.loadJoinRequests();
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'No se pudo rechazar el comprobante.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private loadJoinRequests(): void {
+    if (!this.match || !this.currentUserId || !this.match.requiresPlayerPayment) return;
+    this.matchService.getJoinRequests(this.match.id, this.currentUserId).subscribe({
+      next: (requests) => {
+        this.joinRequests = requests;
         this.cdr.detectChanges();
       }
     });

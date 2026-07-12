@@ -26,6 +26,12 @@ public final class MatchResourceFromEntityAssembler {
                 match.getLatitude(),
                 match.getLongitude(),
                 match.getStatus().name(),
-                match.getParticipants().stream().map(UserId::value).toList());
+                match.getParticipants().stream().map(UserId::value).toList(),
+                match.getCourtReservationId(),
+                match.isRequiresPlayerPayment(),
+                match.getYapePhone(),
+                match.getPlayerPaymentAmount() != null && match.getPlayerPaymentAmount().value() != null
+                        ? match.getPlayerPaymentAmount().value().doubleValue()
+                        : null);
     }
 }

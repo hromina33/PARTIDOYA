@@ -34,6 +34,18 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
+    public boolean existsByPaymentIdempotencyKey(String paymentIdempotencyKey) {
+        return paymentIdempotencyKey != null && !paymentIdempotencyKey.isBlank()
+                && reservationPersistenceRepository.existsByPaymentIdempotencyKey(paymentIdempotencyKey);
+    }
+
+    @Override
+    public boolean existsByProviderReference(String providerReference) {
+        return providerReference != null && !providerReference.isBlank()
+                && reservationPersistenceRepository.existsByProviderReference(providerReference);
+    }
+
+    @Override
     public List<Reservation> findByCourtId(CourtId courtId) {
         return reservationPersistenceRepository.findByCourtId(courtId.value()).stream()
                 .map(ReservationPersistenceAssembler::toDomainFromPersistence)

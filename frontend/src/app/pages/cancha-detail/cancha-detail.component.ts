@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { CourtResponse, CourtService, ReservationResponse } from '../../shared/services/court.service';
 import { MapsLoaderService } from '../../shared/services/maps-loader.service';
+import { PaymentService } from '../../shared/services/payment.service';
 
 @Component({
   selector: 'app-cancha-detail',
@@ -23,13 +24,14 @@ export class CanchaDetailComponent implements OnInit {
 
   selectedDate = '';
   selectedSchedule = '';
-  paymentMethod = 'Tarjeta simulada';
+  paymentMethod = 'Culqi Sandbox';
   reserving = false;
   reservation: ReservationResponse | null = null;
 
   constructor(
     private courtService: CourtService,
     private authService: AuthService,
+    private paymentService: PaymentService,
     private mapsLoader: MapsLoaderService,
     private route: ActivatedRoute,
     private router: Router
@@ -68,6 +70,10 @@ export class CanchaDetailComponent implements OnInit {
     return this.court ? `Pichanga en ${this.court.name}` : '';
   }
 
+  get totalToPay(): number {
+    return this.court?.pricePerHour || 0;
+  }
+
   private loadCourt(id: number): void {
     this.courtService.getCourtById(id).subscribe({
       next: (court) => {
@@ -82,25 +88,40 @@ export class CanchaDetailComponent implements OnInit {
     });
   }
 
-  reserve(): void {
+  async reserve(): Promise<void> {
     if (!this.court || !this.canReserve) return;
     const userId = this.authService.getUserId();
+    const payerEmail = this.authService.getUserEmail();
     if (!userId) {
       this.router.navigate(['/login']);
+      return;
+    }
+    if (!payerEmail) {
+      this.errorMessage = 'Vuelve a iniciar sesion para procesar el pago.';
       return;
     }
     const [startTime, endTime] = this.selectedSchedule.split('-');
     this.reserving = true;
     this.errorMessage = '';
     this.successMessage = '';
-    this.courtService.reserveCourt(this.court.id, userId, this.selectedDate, startTime, endTime, this.paymentMethod).subscribe({
+    let culqiToken = '';
+    try {
+      culqiToken = await this.paymentService.openCulqiCheckout(this.totalToPay, `Reserva ${this.court.name}`);
+    } catch (err: any) {
+      this.errorMessage = err?.message || 'No se pudo procesar el pago.';
+      this.reserving = false;
+      return;
+    }
+    const idempotencyKey = `reservation-${this.court.id}-${userId}-${this.selectedDate}-${startTime}-${Date.now()}`;
+    this.courtService.reserveCourt(this.court.id, userId, this.selectedDate, startTime, endTime, this.paymentMethod,
+      culqiToken, payerEmail, idempotencyKey).subscribe({
       next: (reservation) => {
         this.reservation = reservation;
-        this.successMessage = 'Reserva y pago aprobados correctamente.';
+        this.successMessage = 'Pago realizado correctamente. Reserva confirmada.';
         this.reserving = false;
       },
       error: (err) => {
-        this.errorMessage = err.error?.message || 'No se pudo reservar la cancha.';
+        this.errorMessage = err.error?.message || 'No se pudo procesar el pago.';
         this.reserving = false;
       }
     });

@@ -92,14 +92,21 @@ public class CourtCommandServiceImpl implements CourtCommandService {
         if (reservationRepository.existsOverlapping(command.courtId(), command.date(), command.startTime(), command.endTime())) {
             throw new ResourceConflictException("Reservation", "schedule already reserved");
         }
+        if (reservationRepository.existsByPaymentIdempotencyKey(command.idempotencyKey())) {
+            throw new ResourceConflictException("Payment", "payment request already processed");
+        }
         var reservation = reservationRepository.save(new Reservation(command.userId(), command.courtId(),
                 command.date(), command.startTime(), command.endTime(), court.getPricePerHour()));
         var payment = paymentProcessor.process(new PaymentRequest(reservation.getId().value(),
-                reservation.getPrice(), command.paymentMethod()));
+                reservation.getPrice(), reservation.getCurrency(), command.culqiToken(), command.payerEmail(),
+                command.idempotencyKey(), "Reserva de cancha %s".formatted(court.getName())));
         if (!payment.approved()) {
             throw new IllegalStateException("Payment was rejected");
         }
-        reservation.approvePayment();
+        if (reservationRepository.existsByProviderReference(payment.providerReference())) {
+            throw new ResourceConflictException("Payment", "provider operation already registered");
+        }
+        reservation.approvePayment(payment.providerReference(), command.idempotencyKey());
         return reservationRepository.save(reservation);
     }
 

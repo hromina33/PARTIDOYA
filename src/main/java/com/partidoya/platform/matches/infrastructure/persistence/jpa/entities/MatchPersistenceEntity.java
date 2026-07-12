@@ -26,6 +26,9 @@ public class MatchPersistenceEntity extends AuditableAbstractPersistenceEntity {
     @Column(name = "organizer_id", nullable = false)
     private Long organizerId;
 
+    @Column(name = "court_reservation_id")
+    private Long courtReservationId;
+
     @Column(nullable = false, length = 50)
     private String sport;
 
@@ -53,6 +56,15 @@ public class MatchPersistenceEntity extends AuditableAbstractPersistenceEntity {
 
     @Column(nullable = false, length = 20)
     private String status;
+
+    @Column(name = "requires_player_payment", nullable = false)
+    private boolean requiresPlayerPayment;
+
+    @Column(name = "yape_phone", length = 20)
+    private String yapePhone;
+
+    @Column(name = "player_payment_amount", precision = 10, scale = 2)
+    private BigDecimal playerPaymentAmount;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "match_participants", joinColumns = @JoinColumn(name = "match_id"))

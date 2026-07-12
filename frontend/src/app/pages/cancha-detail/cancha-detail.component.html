@@ -79,16 +79,17 @@
           <label>
             Método de pago
             <select [(ngModel)]="paymentMethod">
-              <option value="Tarjeta simulada">Tarjeta simulada</option>
-              <option value="Yape simulado">Yape simulado</option>
+              <option value="Culqi Sandbox">Culqi Sandbox</option>
             </select>
           </label>
           <div class="reservation-summary">
             <span>Cancha</span><strong>{{ court.name }}</strong>
             <span>Precio</span><strong>S/ {{ court.pricePerHour | number:'1.2-2' }}</strong>
+            <span>Comision</span><strong>S/ 0.00</strong>
+            <span>Total</span><strong>S/ {{ totalToPay | number:'1.2-2' }}</strong>
           </div>
           <button type="button" [disabled]="!canReserve" (click)="reserve()">
-            {{ reserving ? 'Procesando...' : 'Confirmar pago y reserva' }}
+            {{ reserving ? 'Procesando pago...' : 'Pagar con Culqi Sandbox' }}
           </button>
           @if (reservation) {
             <a

@@ -13,6 +13,8 @@ public record ReservationResource(
         LocalTime startTime,
         LocalTime endTime,
         BigDecimal price,
+        String currency,
+        String providerReference,
         String status,
         String paymentStatus,
         LocalDateTime createdAt

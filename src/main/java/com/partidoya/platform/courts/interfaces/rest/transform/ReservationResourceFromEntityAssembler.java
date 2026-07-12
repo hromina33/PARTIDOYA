@@ -16,6 +16,8 @@ public final class ReservationResourceFromEntityAssembler {
                 reservation.getStartTime(),
                 reservation.getEndTime(),
                 reservation.getPrice(),
+                reservation.getCurrency(),
+                reservation.getProviderReference(),
                 reservation.getStatus().name(),
                 reservation.getPaymentStatus().name(),
                 reservation.getCreatedAt());

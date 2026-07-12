@@ -27,6 +27,7 @@ public final class MatchPersistenceAssembler {
         return new Match(
                 new MatchId(entity.getId()),
                 new UserId(entity.getOrganizerId()),
+                entity.getCourtReservationId(),
                 entity.getSport(),
                 new MatchTitle(entity.getTitle()),
                 new MatchDescription(entity.getDescription()),
@@ -37,7 +38,10 @@ public final class MatchPersistenceAssembler {
                 entity.getLatitude(),
                 entity.getLongitude(),
                 MatchStatus.valueOf(entity.getStatus()),
-                participants);
+                participants,
+                entity.isRequiresPlayerPayment(),
+                entity.getYapePhone(),
+                new MatchPrice(entity.getPlayerPaymentAmount()));
     }
 
     public static MatchPersistenceEntity toPersistenceFromDomain(Match match) {
@@ -47,6 +51,7 @@ public final class MatchPersistenceAssembler {
             entity.setId(match.getId().value());
         }
         entity.setOrganizerId(match.getOrganizerId().value());
+        entity.setCourtReservationId(match.getCourtReservationId());
         entity.setSport(match.getSport());
         entity.setTitle(match.getTitle().value());
         entity.setDescription(match.getDescription() != null ? match.getDescription().value() : null);
@@ -57,6 +62,9 @@ public final class MatchPersistenceAssembler {
         entity.setLatitude(match.getLatitude());
         entity.setLongitude(match.getLongitude());
         entity.setStatus(match.getStatus().name());
+        entity.setRequiresPlayerPayment(match.isRequiresPlayerPayment());
+        entity.setYapePhone(match.getYapePhone());
+        entity.setPlayerPaymentAmount(match.getPlayerPaymentAmount() != null ? match.getPlayerPaymentAmount().value() : null);
         var participantIds = new ArrayList<>(match.getParticipants().stream()
                 .map(UserId::value)
                 .toList());

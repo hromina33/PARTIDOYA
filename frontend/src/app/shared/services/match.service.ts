@@ -18,10 +18,15 @@ export interface MatchResponse {
   longitude: number | null;
   status: string;
   participantIds: number[];
+  courtReservationId: number | null;
+  requiresPlayerPayment: boolean;
+  yapePhone: string | null;
+  playerPaymentAmount: number | null;
 }
 
 export interface CreateMatchRequest {
   organizerId: number;
+  courtReservationId?: number | null;
   sport: string;
   title: string;
   description: string | null;
@@ -31,6 +36,22 @@ export interface CreateMatchRequest {
   price: number | null;
   latitude: number | null;
   longitude: number | null;
+  requiresPlayerPayment?: boolean;
+  yapePhone?: string | null;
+}
+
+export interface PlayerJoinRequestResponse {
+  id: number;
+  matchId: number;
+  playerId: number;
+  proofUrl: string;
+  originalFileName: string;
+  amount: number;
+  status: string;
+  submittedAt: string;
+  reviewedAt: string | null;
+  reviewedBy: number | null;
+  rejectionReason: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -64,6 +85,27 @@ export class MatchService {
 
   leaveMatch(matchId: number, userId: number): Observable<MatchResponse> {
     return this.http.post<MatchResponse>(`${this.apiUrl}/${matchId}/leave`, { userId });
+  }
+
+  submitJoinProof(matchId: number, userId: number, proof: File): Observable<PlayerJoinRequestResponse> {
+    const formData = new FormData();
+    formData.append('proof', proof);
+    return this.http.post<PlayerJoinRequestResponse>(`${this.apiUrl}/${matchId}/join-requests?userId=${userId}`, formData);
+  }
+
+  getJoinRequests(matchId: number, requesterId: number): Observable<PlayerJoinRequestResponse[]> {
+    return this.http.get<PlayerJoinRequestResponse[]>(`${this.apiUrl}/${matchId}/join-requests`, { params: { requesterId } });
+  }
+
+  approveJoinRequest(matchId: number, requestId: number, reviewerId: number): Observable<PlayerJoinRequestResponse> {
+    return this.http.post<PlayerJoinRequestResponse>(`${this.apiUrl}/${matchId}/join-requests/${requestId}/approve?reviewerId=${reviewerId}`, {});
+  }
+
+  rejectJoinRequest(matchId: number, requestId: number, reviewerId: number, rejectionReason: string): Observable<PlayerJoinRequestResponse> {
+    return this.http.post<PlayerJoinRequestResponse>(`${this.apiUrl}/${matchId}/join-requests/${requestId}/reject`, {
+      reviewerId,
+      rejectionReason
+    });
   }
 
   getMatchesByOrganizer(userId: number): Observable<MatchResponse[]> {

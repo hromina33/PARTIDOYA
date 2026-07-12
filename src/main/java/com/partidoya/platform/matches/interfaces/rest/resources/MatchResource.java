@@ -16,5 +16,9 @@ public record MatchResource(
         Double latitude,
         Double longitude,
         String status,
-        List<Long> participantIds) {
+        List<Long> participantIds,
+        Long courtReservationId,
+        boolean requiresPlayerPayment,
+        String yapePhone,
+        Double playerPaymentAmount) {
 }
