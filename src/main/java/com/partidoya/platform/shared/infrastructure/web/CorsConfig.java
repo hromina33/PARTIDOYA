@@ -12,6 +12,9 @@ public class CorsConfig {
     @Value("${cors.allowed-origins:http://localhost:4200}")
     private String[] allowedOrigins;
 
+    @Value("${cors.allowed-origin-patterns:https://*.vercel.app}")
+    private String[] allowedOriginPatterns;
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -19,7 +22,7 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
                         .allowedOrigins(allowedOrigins)
-                        .allowedOriginPatterns("https://*.vercel.app")
+                        .allowedOriginPatterns(allowedOriginPatterns)
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
