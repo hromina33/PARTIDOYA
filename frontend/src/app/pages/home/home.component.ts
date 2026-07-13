@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatchService, MatchResponse } from '../../shared/services/match.service';
 import { AuthService } from '../../shared/services/auth.service';
@@ -9,7 +10,7 @@ const NEARBY_RADIUS_KM = 50;
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -21,6 +22,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   joinedMatches: MatchResponse[] = [];
   openMatchesCount = 0;
   almostFullCount = 0;
+
+  locationDenied = false;
+  manualSearchQuery = '';
+  manualSearchResults: MatchResponse[] = [];
+  private allMatches: MatchResponse[] = [];
 
   banners = [
     { title: 'Pichanga Relámpago', subtitle: 'Fútbol 7 este sábado a las 4pm — ¡últimos 3 cupos!', cta: 'Ver partido', theme: 'banner-green' },
@@ -58,6 +64,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime()
         );
         const almostFull = matches.filter(m => m.availableSlots > 0 && m.availableSlots <= 3);
+        this.allMatches = matches;
         this.openMatchesCount = matches.length;
         this.almostFullCount = almostFull.length;
         this.upcomingMatches = sorted.slice(0, 4);
@@ -100,8 +107,21 @@ export class HomeComponent implements OnInit, OnDestroy {
         .slice(0, 6);
       this.cdr.detectChanges();
     } catch {
-      // ubicación no disponible: la sección "Cerca de ti" simplemente no se muestra
+      // ubicación no disponible: ofrecemos búsqueda manual por distrito/dirección
+      this.locationDenied = true;
+      this.cdr.detectChanges();
     }
+  }
+
+  searchByAddress(): void {
+    const query = this.manualSearchQuery.trim().toLowerCase();
+    if (!query) {
+      this.manualSearchResults = [];
+      return;
+    }
+    this.manualSearchResults = this.allMatches
+      .filter(m => m.address.toLowerCase().includes(query))
+      .slice(0, 6);
   }
 
   ngOnDestroy(): void {

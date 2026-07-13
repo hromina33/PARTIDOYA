@@ -297,6 +297,52 @@
           }
         </div>
       </div>
+    } @else if (locationDenied) {
+      <div class="section">
+        <div class="section-header">
+          <h2>Buscar por distrito o dirección</h2>
+        </div>
+        <p class="manual-search-hint">No pudimos acceder a tu ubicación. Busca partidos escribiendo un distrito o una dirección.</p>
+        <div class="manual-search-box">
+          <input
+            type="text"
+            [(ngModel)]="manualSearchQuery"
+            (ngModelChange)="searchByAddress()"
+            placeholder="Ej: Surquillo, Av. Angamos..."
+            class="manual-search-input">
+        </div>
+        @if (manualSearchQuery.trim() && manualSearchResults.length === 0) {
+          <p class="manual-search-empty">No hay partidos que coincidan con "{{ manualSearchQuery }}".</p>
+        }
+        @if (manualSearchResults.length > 0) {
+          <div class="scroll-row">
+            @for (match of manualSearchResults; track match.id) {
+              <a [routerLink]="['/partidos', match.id]" class="mini-card">
+                <div class="mini-card-img mini-{{ match.sport.toLowerCase() }}">
+                  <div class="mini-card-overlay"></div>
+                  <span class="mini-sport">{{ match.sport }}</span>
+                </div>
+                <div class="mini-card-body">
+                  <span class="mini-title">{{ match.title }}</span>
+                  <span class="mini-meta">{{ formatDate(match.matchDate) }}</span>
+                  @if (match.price !== null) {
+                    <span class="mini-meta">S/ {{ match.price | number:'1.2-2' }}</span>
+                  }
+                  <div class="mini-bottom">
+                    <span class="mini-slots">{{ match.totalSlots - match.availableSlots }}/{{ match.totalSlots }}</span>
+                    @if (!hasJoined(match) && match.availableSlots > 0) {
+                      <button class="btn-mini" (click)="$event.preventDefault(); $event.stopPropagation(); joinMatch(match.id)">Unirme</button>
+                    }
+                    @if (hasJoined(match)) {
+                      <span class="badge-mini">Inscrito</span>
+                    }
+                  </div>
+                </div>
+              </a>
+            }
+          </div>
+        }
+      </div>
     }
 
     <!-- Fila 3: Partidos en los que estás inscrito -->
