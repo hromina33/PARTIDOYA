@@ -7,11 +7,13 @@ import com.partidoya.platform.courts.infrastructure.persistence.jpa.assemblers.C
 import com.partidoya.platform.courts.infrastructure.persistence.jpa.repositories.CourtPersistenceRepository;
 import com.partidoya.platform.iam.domain.model.valueobjects.UserId;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Transactional(readOnly = true)
 public class CourtRepositoryImpl implements CourtRepository {
     private final CourtPersistenceRepository courtPersistenceRepository;
 
@@ -41,6 +43,7 @@ public class CourtRepositoryImpl implements CourtRepository {
     }
 
     @Override
+    @Transactional
     public Court save(Court court) {
         var entity = CourtPersistenceAssembler.toPersistenceFromDomain(court);
         return CourtPersistenceAssembler.toDomainFromPersistence(courtPersistenceRepository.save(entity));
