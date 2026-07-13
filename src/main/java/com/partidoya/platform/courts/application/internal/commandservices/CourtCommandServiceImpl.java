@@ -18,10 +18,12 @@ import com.partidoya.platform.shared.domain.exceptions.ForbiddenActionException;
 import com.partidoya.platform.shared.domain.exceptions.ResourceConflictException;
 import com.partidoya.platform.shared.domain.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
+@Transactional
 public class CourtCommandServiceImpl implements CourtCommandService {
     private final CourtRepository courtRepository;
     private final ReservationRepository reservationRepository;
@@ -101,7 +103,7 @@ public class CourtCommandServiceImpl implements CourtCommandService {
                 reservation.getPrice(), reservation.getCurrency(), command.culqiToken(), command.payerEmail(),
                 command.idempotencyKey(), "Reserva de cancha %s".formatted(court.getName())));
         if (!payment.approved()) {
-            throw new IllegalStateException("Payment was rejected");
+            throw new IllegalStateException("Pago rechazado por Culqi.");
         }
         if (reservationRepository.existsByProviderReference(payment.providerReference())) {
             throw new ResourceConflictException("Payment", "provider operation already registered");

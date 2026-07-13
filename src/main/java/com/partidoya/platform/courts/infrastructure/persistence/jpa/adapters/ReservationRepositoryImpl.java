@@ -30,7 +30,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public boolean existsOverlapping(CourtId courtId, LocalDate date, LocalTime startTime, LocalTime endTime) {
         return reservationPersistenceRepository.existsByCourtIdAndDateAndStartTimeLessThanAndEndTimeGreaterThanAndStatusIn(
-                courtId.value(), date, endTime, startTime, List.of("PENDING", "CONFIRMED"));
+                courtId.value(), date, endTime, startTime, List.of("CONFIRMED"));
     }
 
     @Override

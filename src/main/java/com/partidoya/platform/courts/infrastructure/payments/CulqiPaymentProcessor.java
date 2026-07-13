@@ -18,11 +18,22 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 @Profile("!test")
 public class CulqiPaymentProcessor implements PaymentProcessor {
     private static final URI CHARGES_URI = URI.create("https://api.culqi.com/v2/charges");
+    private static final Set<String> SUCCESS_VALUES = Set.of(
+            "exitosa",
+            "venta_exitosa",
+            "autorizada",
+            "autorizado",
+            "capturada",
+            "capturado",
+            "successful",
+            "succeeded",
+            "captured");
 
     private final String secretKey;
     private final ObjectMapper objectMapper;
@@ -66,8 +77,13 @@ public class CulqiPaymentProcessor implements PaymentProcessor {
                 throw new IllegalStateException("No se pudo procesar el pago.");
             }
             JsonNode json = objectMapper.readTree(response.body());
-            var status = json.path("state").asText(json.path("response_code").asText("UNKNOWN"));
-            var approved = "Exitosa".equalsIgnoreCase(status) || "venta_exitosa".equalsIgnoreCase(json.path("response_code").asText());
+            var responseCode = textAt(json, "response_code");
+            var state = textAt(json, "state");
+            var outcomeType = json.path("outcome").path("type").asText("");
+            var outcomeCode = json.path("outcome").path("code").asText("");
+            var status = firstPresent(state, responseCode, outcomeType, outcomeCode, "UNKNOWN");
+            var approved = isApproved(state) || isApproved(responseCode) || isApproved(outcomeType)
+                    || "AUT0000".equalsIgnoreCase(outcomeCode);
             return new PaymentResult(approved, json.path("id").asText(null), status, json.path("currency").asText(request.currency()));
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
@@ -79,5 +95,20 @@ public class CulqiPaymentProcessor implements PaymentProcessor {
 
     private static int toCents(BigDecimal amount) {
         return amount.movePointRight(2).intValueExact();
+    }
+
+    private static boolean isApproved(String value) {
+        return value != null && SUCCESS_VALUES.contains(value.trim().toLowerCase());
+    }
+
+    private static String textAt(JsonNode json, String field) {
+        return json.hasNonNull(field) ? json.path(field).asText("") : "";
+    }
+
+    private static String firstPresent(String... values) {
+        for (var value : values) {
+            if (value != null && !value.isBlank()) return value;
+        }
+        return "UNKNOWN";
     }
 }
