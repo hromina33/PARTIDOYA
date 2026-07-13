@@ -60,4 +60,9 @@ public class MatchRepositoryImpl implements MatchRepository {
                 .map(MatchPersistenceAssembler::toDomainFromPersistence)
                 .toList();
     }
+
+    @Override
+    public long countRelatedToUser(UserId userId) {
+        return matchPersistenceRepository.countRelatedToUser(userId.value());
+    }
 }

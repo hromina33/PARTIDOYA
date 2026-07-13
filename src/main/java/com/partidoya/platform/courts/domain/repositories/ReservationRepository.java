@@ -16,6 +16,8 @@ public interface ReservationRepository {
     boolean existsByPaymentIdempotencyKey(String paymentIdempotencyKey);
     boolean existsByProviderReference(String providerReference);
     List<Reservation> findByCourtId(CourtId courtId);
+    List<Reservation> findByCourtIdAndDate(CourtId courtId, LocalDate date);
     List<Reservation> findByCourtIds(Collection<CourtId> courtIds, LocalDate from, LocalDate to);
+    long countByUserId(com.partidoya.platform.iam.domain.model.valueobjects.UserId userId);
     Reservation save(Reservation reservation);
 }

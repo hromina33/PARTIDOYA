@@ -1,0 +1,132 @@
+<section class="users-page">
+  <div class="container">
+    <header class="page-header">
+      <div>
+        <span>Administracion</span>
+        <h1>Gestion de usuarios</h1>
+        <p>Busca usuarios, revisa su actividad y administra el estado de sus cuentas.</p>
+      </div>
+    </header>
+
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage }}</div>
+    }
+    @if (successMessage) {
+      <div class="alert alert-success">{{ successMessage }}</div>
+    }
+
+    <div class="tools">
+      <label>
+        Buscar
+        <input type="search" [(ngModel)]="searchTerm" (keyup.enter)="search()" placeholder="Nombre o correo">
+      </label>
+      <div class="tabs">
+        <button type="button" [class.active]="roleFilter === 'ALL'" (click)="roleFilter = 'ALL'; search()">Todos</button>
+        <button type="button" [class.active]="roleFilter === 'PLAYERS'" (click)="roleFilter = 'PLAYERS'; search()">Jugadores</button>
+        <button type="button" [class.active]="roleFilter === 'COURT_ADMINS'" (click)="roleFilter = 'COURT_ADMINS'; search()">Canchas</button>
+      </div>
+      <button type="button" class="primary-action" (click)="search()">Buscar</button>
+    </div>
+
+    <div class="users-layout">
+      <main class="users-panel">
+        <div class="panel-title">
+          <h2>Usuarios</h2>
+          <span>{{ totalElements }} resultados</span>
+        </div>
+
+        @if (loading) {
+          <div class="state-box">Cargando usuarios...</div>
+        } @else if (users.length === 0) {
+          <div class="state-box">No hay usuarios con estos filtros.</div>
+        } @else {
+          <div class="user-list">
+            @for (user of users; track user.id) {
+              <button type="button" class="user-row" [class.active]="selectedUser?.id === user.id" (click)="selectUser(user)">
+                <span class="avatar">{{ initials(user.fullName) }}</span>
+                <span class="user-main">
+                  <strong>{{ user.fullName }}</strong>
+                  <small>{{ user.email }}</small>
+                </span>
+                <span class="pill">{{ roleLabel(user.role) }}</span>
+                <span class="status" [class.suspended]="user.status === 'SUSPENDED'">{{ statusLabel(user.status) }}</span>
+              </button>
+            }
+          </div>
+
+          <div class="pagination">
+            <button type="button" (click)="changePage(-1)" [disabled]="page === 0">Anterior</button>
+            <span>{{ page + 1 }} / {{ totalPages }}</span>
+            <button type="button" (click)="changePage(1)" [disabled]="page + 1 >= totalPages">Siguiente</button>
+          </div>
+        }
+      </main>
+
+      <aside class="detail-panel">
+        @if (!selectedUser) {
+          <div class="state-box">Selecciona un usuario para ver el detalle.</div>
+        } @else if (detailLoading) {
+          <div class="state-box">Cargando detalle...</div>
+        } @else {
+          <div class="detail-head">
+            <span class="avatar large">{{ initials(selectedUser.fullName) }}</span>
+            <div>
+              <h2>{{ selectedUser.fullName }}</h2>
+              <p>{{ selectedUser.email }}</p>
+              <span class="status" [class.suspended]="selectedUser.status === 'SUSPENDED'">{{ statusLabel(selectedUser.status) }}</span>
+            </div>
+          </div>
+
+          <div class="metrics">
+            <div><span>Reservas</span><strong>{{ selectedUser.reservationCount }}</strong></div>
+            <div><span>Partidos</span><strong>{{ selectedUser.matchCount }}</strong></div>
+            <div><span>Rating</span><strong>{{ selectedUser.averageRating ?? 'N/A' }}</strong></div>
+          </div>
+
+          @if (selectedUser.suspensionReason) {
+            <div class="suspension-box">
+              <span>Motivo vigente</span>
+              <strong>{{ selectedUser.suspensionReason }}</strong>
+              @if (selectedUser.suspendedUntil) {
+                <small>Hasta {{ selectedUser.suspendedUntil }}</small>
+              }
+            </div>
+          }
+
+          <div class="action-box">
+            <label>
+              Motivo
+              <textarea rows="3" [(ngModel)]="actionReason" placeholder="Motivo de la accion"></textarea>
+            </label>
+            <label>
+              Fin de suspension
+              <input type="date" [(ngModel)]="suspendedUntil">
+            </label>
+            <div class="action-buttons">
+              <button type="button" class="secondary-action" (click)="applyAction('activate')" [disabled]="actionLoading">Activar</button>
+              <button type="button" class="danger-action" (click)="applyAction('suspend')" [disabled]="actionLoading">Suspender</button>
+              <button type="button" class="primary-action" (click)="applyAction('reactivate')" [disabled]="actionLoading">Reactivar</button>
+            </div>
+          </div>
+
+          <div class="history">
+            <h3>Historial administrativo</h3>
+            @if (!detail || detail.actions.length === 0) {
+              <p>Sin acciones registradas.</p>
+            } @else {
+              @for (action of detail.actions; track action.id) {
+                <article>
+                  <strong>{{ action.action }}</strong>
+                  <span>{{ action.createdAt }}</span>
+                  @if (action.reason) {
+                    <p>{{ action.reason }}</p>
+                  }
+                </article>
+              }
+            }
+          </div>
+        }
+      </aside>
+    </div>
+  </div>
+</section>

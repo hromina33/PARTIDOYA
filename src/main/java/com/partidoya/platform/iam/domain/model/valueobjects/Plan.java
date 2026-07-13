@@ -4,7 +4,8 @@ public enum Plan {
     JUGADOR_BASICO(Role.JUGADOR),
     JUGADOR_PLUS(Role.JUGADOR),
     CANCHA_EMPRENDEDOR(Role.ADMIN_CANCHA),
-    CANCHA_BUSINESS(Role.ADMIN_CANCHA);
+    CANCHA_BUSINESS(Role.ADMIN_CANCHA),
+    ADMIN_GENERAL(Role.ADMIN_GENERAL);
 
     private final Role role;
 
@@ -17,6 +18,7 @@ public enum Plan {
     }
 
     public static Plan defaultForRole(Role role) {
+        if (role == Role.ADMIN_GENERAL) return ADMIN_GENERAL;
         return role == Role.ADMIN_CANCHA ? CANCHA_EMPRENDEDOR : JUGADOR_BASICO;
     }
 }

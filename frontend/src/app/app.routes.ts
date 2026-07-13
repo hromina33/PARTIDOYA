@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './shared/guards/auth.guard';
 import { guestGuard } from './shared/guards/guest.guard';
-import { courtAdminGuard, playerGuard } from './shared/guards/plan.guard';
+import { courtAdminGuard, platformAdminGuard, playerGuard } from './shared/guards/plan.guard';
 
 export const routes: Routes = [
   {
@@ -58,6 +58,21 @@ export const routes: Routes = [
     path: 'calendar',
     canActivate: [courtAdminGuard],
     loadComponent: () => import('./pages/calendar/calendar.component').then(m => m.CalendarComponent)
+  },
+  {
+    path: 'availability',
+    canActivate: [courtAdminGuard],
+    loadComponent: () => import('./pages/availability/availability.component').then(m => m.AvailabilityComponent)
+  },
+  {
+    path: 'reports',
+    canActivate: [courtAdminGuard],
+    loadComponent: () => import('./pages/reports/reports.component').then(m => m.ReportsComponent)
+  },
+  {
+    path: 'admin-users',
+    canActivate: [platformAdminGuard],
+    loadComponent: () => import('./pages/user-management/user-management.component').then(m => m.UserManagementComponent)
   },
   {
     path: 'mis-partidos',

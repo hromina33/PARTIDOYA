@@ -6,6 +6,7 @@ import com.partidoya.platform.courts.domain.model.valueobjects.ReservationId;
 import com.partidoya.platform.courts.domain.repositories.ReservationRepository;
 import com.partidoya.platform.courts.infrastructure.persistence.jpa.assemblers.ReservationPersistenceAssembler;
 import com.partidoya.platform.courts.infrastructure.persistence.jpa.repositories.ReservationPersistenceRepository;
+import com.partidoya.platform.iam.domain.model.valueobjects.UserId;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -54,6 +55,13 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
+    public List<Reservation> findByCourtIdAndDate(CourtId courtId, LocalDate date) {
+        return reservationPersistenceRepository.findByCourtIdAndDateOrderByStartTimeAsc(courtId.value(), date).stream()
+                .map(ReservationPersistenceAssembler::toDomainFromPersistence)
+                .toList();
+    }
+
+    @Override
     public List<Reservation> findByCourtIds(Collection<CourtId> courtIds, LocalDate from, LocalDate to) {
         var ids = courtIds.stream().map(CourtId::value).toList();
         if (ids.isEmpty()) return List.of();
@@ -61,6 +69,11 @@ public class ReservationRepositoryImpl implements ReservationRepository {
                 .stream()
                 .map(ReservationPersistenceAssembler::toDomainFromPersistence)
                 .toList();
+    }
+
+    @Override
+    public long countByUserId(UserId userId) {
+        return reservationPersistenceRepository.countByUserId(userId.value());
     }
 
     @Override

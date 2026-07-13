@@ -59,6 +59,10 @@ export class NavbarComponent implements OnInit, DoCheck {
     return this.authService.isPlayerPlan();
   }
 
+  get canManagePlatform(): boolean {
+    return this.authService.isPlatformAdmin();
+  }
+
   toggleUserMenu(): void {
     this.userMenuOpen = !this.userMenuOpen;
   }

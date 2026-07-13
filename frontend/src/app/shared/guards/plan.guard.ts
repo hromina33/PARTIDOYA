@@ -31,3 +31,18 @@ export const courtAdminGuard: CanActivateFn = () => {
   }
   return true;
 };
+
+export const platformAdminGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isLoggedIn()) {
+    router.navigate(['/login']);
+    return false;
+  }
+  if (!authService.isPlatformAdmin()) {
+    router.navigate([authService.dashboardRoute()]);
+    return false;
+  }
+  return true;
+};

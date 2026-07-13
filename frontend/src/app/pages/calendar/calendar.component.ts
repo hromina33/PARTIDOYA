@@ -1,8 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { AuthService } from '../../shared/services/auth.service';
-import { CourtResponse, CourtService, ManagedReservationResponse } from '../../shared/services/court.service';
+import {
+  CourtAvailabilityResponse,
+  CourtResponse,
+  CourtService,
+  ManagedReservationResponse,
+  SaveCourtAvailabilityRequest
+} from '../../shared/services/court.service';
 
 type CalendarView = 'month' | 'week' | 'day';
 
@@ -23,9 +30,12 @@ interface CalendarDay {
 export class CalendarComponent implements OnInit {
   courts: CourtResponse[] = [];
   reservations: ManagedReservationResponse[] = [];
+  availability: CourtAvailabilityResponse[] = [];
   selectedReservation: ManagedReservationResponse | null = null;
+  selectedAvailability: CourtAvailabilityResponse | null = null;
   loading = true;
   errorMessage = '';
+  successMessage = '';
 
   viewMode: CalendarView = 'week';
   currentDate = new Date();
@@ -42,7 +52,17 @@ export class CalendarComponent implements OnInit {
     '19:00-20:00', '20:00-21:00', '21:00-22:00', '22:00-23:00'
   ];
   readonly weekDayNames = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+  readonly availabilityReasons = ['Mantenimiento', 'Evento privado', 'Cierre temporal', 'Otro'];
   private readonly colors = ['#c6f135', '#38bdf8', '#f59e0b', '#a78bfa', '#fb7185', '#34d399'];
+  availabilityForm: SaveCourtAvailabilityRequest = {
+    courtId: 0,
+    date: '',
+    allDay: false,
+    startTime: '07:00',
+    endTime: '08:00',
+    type: 'BLOCKED',
+    reason: 'Mantenimiento'
+  };
 
   constructor(
     private authService: AuthService,
@@ -56,6 +76,12 @@ export class CalendarComponent implements OnInit {
   get calendarReservations(): ManagedReservationResponse[] {
     return this.reservations.filter(reservation =>
       this.selectedCourtId === 'all' || reservation.courtId === Number(this.selectedCourtId)
+    );
+  }
+
+  get calendarAvailability(): CourtAvailabilityResponse[] {
+    return this.availability.filter(record =>
+      this.selectedCourtId === 'all' || record.courtId === Number(this.selectedCourtId)
     );
   }
 
@@ -145,9 +171,13 @@ export class CalendarComponent implements OnInit {
     }
     const range = this.fetchRange();
     this.loading = true;
-    this.courtService.getManagedReservations(ownerId, range.from, range.to).subscribe({
-      next: reservations => {
-        this.reservations = reservations;
+    forkJoin({
+      reservations: this.courtService.getManagedReservations(ownerId, range.from, range.to),
+      availability: this.courtService.getManagedAvailability(ownerId, range.from, range.to)
+    }).subscribe({
+      next: result => {
+        this.reservations = result.reservations;
+        this.availability = result.availability;
         this.loading = false;
       },
       error: err => {
@@ -178,6 +208,7 @@ export class CalendarComponent implements OnInit {
 
   onCourtChange(): void {
     this.selectedReservation = null;
+    this.selectedAvailability = null;
   }
 
   reservationsForDate(date: Date): ManagedReservationResponse[] {
@@ -197,6 +228,23 @@ export class CalendarComponent implements OnInit {
     );
   }
 
+  availabilityForDate(date: Date): CourtAvailabilityResponse[] {
+    const key = this.toIsoDate(date);
+    return this.calendarAvailability
+      .filter(record => record.date === key)
+      .sort((a, b) => this.shortTime(a.startTime).localeCompare(this.shortTime(b.startTime)));
+  }
+
+  availabilityForSlot(date: Date, slot: string): CourtAvailabilityResponse[] {
+    const key = this.toIsoDate(date);
+    const [slotStart, slotEnd] = slot.split('-');
+    return this.calendarAvailability.filter(record =>
+      record.date === key &&
+      this.shortTime(record.startTime) < slotEnd &&
+      this.shortTime(record.endTime) > slotStart
+    );
+  }
+
   courtColor(courtId: number): string {
     const index = this.courts.findIndex(court => court.id === courtId);
     return this.colors[(index >= 0 ? index : courtId) % this.colors.length];
@@ -208,6 +256,52 @@ export class CalendarComponent implements OnInit {
 
   closeReservation(): void {
     this.selectedReservation = null;
+  }
+
+  openAvailability(record: CourtAvailabilityResponse): void {
+    this.selectedAvailability = record;
+    this.availabilityForm = {
+      courtId: record.courtId,
+      date: record.date,
+      allDay: record.allDay,
+      startTime: this.shortTime(record.startTime),
+      endTime: this.shortTime(record.endTime),
+      type: record.type,
+      reason: record.reason || 'Mantenimiento'
+    };
+  }
+
+  closeAvailability(): void {
+    this.selectedAvailability = null;
+  }
+
+  saveAvailability(): void {
+    const ownerId = this.authService.getUserId();
+    if (!ownerId || !this.selectedAvailability) return;
+    this.errorMessage = '';
+    this.successMessage = '';
+    const payload = this.normalizedAvailabilityForm();
+    this.courtService.updateAvailability(ownerId, this.selectedAvailability.id, payload).subscribe({
+      next: () => {
+        this.successMessage = 'Disponibilidad actualizada.';
+        this.closeAvailability();
+        this.loadReservations();
+      },
+      error: err => this.errorMessage = err.error?.message || 'No se pudo actualizar la disponibilidad.'
+    });
+  }
+
+  deleteAvailability(): void {
+    const ownerId = this.authService.getUserId();
+    if (!ownerId || !this.selectedAvailability || !confirm('Deseas eliminar este registro?')) return;
+    this.courtService.deleteAvailability(ownerId, this.selectedAvailability.id).subscribe({
+      next: () => {
+        this.successMessage = 'Disponibilidad eliminada.';
+        this.closeAvailability();
+        this.loadReservations();
+      },
+      error: err => this.errorMessage = err.error?.message || 'No se pudo eliminar la disponibilidad.'
+    });
   }
 
   formatDayHeader(date: Date): string {
@@ -240,8 +334,16 @@ export class CalendarComponent implements OnInit {
     return labels[value] || value;
   }
 
+  availabilityLabel(value: string): string {
+    return value === 'BLOCKED' ? 'Bloqueado' : 'Disponible';
+  }
+
   trackReservation(_: number, reservation: ManagedReservationResponse): number {
     return reservation.id;
+  }
+
+  trackAvailability(_: number, record: CourtAvailabilityResponse): number {
+    return record.id;
   }
 
   trackDay(_: number, day: CalendarDay | Date): string {
@@ -276,5 +378,14 @@ export class CalendarComponent implements OnInit {
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
     const day = `${date.getDate()}`.padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private normalizedAvailabilityForm(): SaveCourtAvailabilityRequest {
+    return {
+      ...this.availabilityForm,
+      startTime: this.availabilityForm.allDay ? '07:00' : this.availabilityForm.startTime,
+      endTime: this.availabilityForm.allDay ? '23:00' : this.availabilityForm.endTime,
+      reason: this.availabilityForm.type === 'BLOCKED' ? this.availabilityForm.reason : null
+    };
   }
 }

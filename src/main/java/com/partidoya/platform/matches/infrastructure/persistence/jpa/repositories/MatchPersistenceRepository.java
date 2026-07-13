@@ -16,4 +16,11 @@ public interface MatchPersistenceRepository extends JpaRepository<MatchPersisten
 
     @Query("SELECT m FROM MatchPersistenceEntity m JOIN m.participantIds p WHERE p = :userId")
     List<MatchPersistenceEntity> findAllByParticipantId(@Param("userId") Long userId);
+
+    @Query("""
+            select count(distinct m) from MatchPersistenceEntity m
+            left join m.participantIds p
+            where m.organizerId = :userId or p = :userId
+            """)
+    long countRelatedToUser(@Param("userId") Long userId);
 }

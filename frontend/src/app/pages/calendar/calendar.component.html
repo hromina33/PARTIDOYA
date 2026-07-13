@@ -12,6 +12,9 @@
     @if (errorMessage) {
       <div class="alert alert-error">{{ errorMessage }}</div>
     }
+    @if (successMessage) {
+      <div class="alert alert-success">{{ successMessage }}</div>
+    }
 
     <div class="calendar-toolbar">
       <div class="period-actions" aria-label="Cambiar periodo">
@@ -70,6 +73,11 @@
                     @if (reservationsForDate(day.date).length > 3) {
                       <small>+{{ reservationsForDate(day.date).length - 3 }} mas</small>
                     }
+                    @for (record of availabilityForDate(day.date) | slice:0:2; track trackAvailability($index, record)) {
+                      <div class="month-event availability" [class.blocked]="record.type === 'BLOCKED'">
+                        {{ availabilityLabel(record.type) }} {{ record.courtName }}
+                      </div>
+                    }
                   </div>
                 </button>
               }
@@ -90,6 +98,17 @@
                   <div class="slot-label">{{ slot }}</div>
                   @for (day of dayColumns; track trackDay($index, day)) {
                     <div class="slot-cell">
+                      @for (record of availabilityForSlot(day, slot); track trackAvailability($index, record)) {
+                        <button
+                          type="button"
+                          class="availability-chip"
+                          [class.blocked]="record.type === 'BLOCKED'"
+                          (click)="openAvailability(record)">
+                          <strong>{{ availabilityLabel(record.type) }}</strong>
+                          <span>{{ record.courtName }}</span>
+                          <small>{{ shortTime(record.startTime) }}-{{ shortTime(record.endTime) }}</small>
+                        </button>
+                      }
                       @for (reservation of reservationsForSlot(day, slot); track trackReservation($index, reservation)) {
                         <button
                           type="button"
@@ -210,6 +229,58 @@
           </div>
         }
       </dl>
+    </article>
+  </div>
+}
+
+@if (selectedAvailability) {
+  <div class="reservation-modal" role="dialog" aria-modal="true" aria-label="Detalle de disponibilidad" (click)="closeAvailability()">
+    <article class="reservation-detail" (click)="$event.stopPropagation()">
+      <button type="button" class="close-button" (click)="closeAvailability()" aria-label="Cerrar">&times;</button>
+      <span class="detail-kicker">Disponibilidad</span>
+      <h2>{{ selectedAvailability.courtName }}</h2>
+
+      <div class="availability-edit">
+        <label>
+          Fecha
+          <input type="date" [(ngModel)]="availabilityForm.date">
+        </label>
+        <label class="check-row">
+          <input type="checkbox" [(ngModel)]="availabilityForm.allDay">
+          <span>Todo el dia</span>
+        </label>
+        <div class="detail-grid">
+          <label>
+            Inicio
+            <input type="time" step="3600" [(ngModel)]="availabilityForm.startTime" [disabled]="availabilityForm.allDay">
+          </label>
+          <label>
+            Fin
+            <input type="time" step="3600" [(ngModel)]="availabilityForm.endTime" [disabled]="availabilityForm.allDay">
+          </label>
+        </div>
+        <label>
+          Tipo
+          <select [(ngModel)]="availabilityForm.type">
+            <option value="AVAILABLE">Disponible</option>
+            <option value="BLOCKED">Bloqueado</option>
+          </select>
+        </label>
+        @if (availabilityForm.type === 'BLOCKED') {
+          <label>
+            Motivo
+            <select [(ngModel)]="availabilityForm.reason">
+              @for (reason of availabilityReasons; track reason) {
+                <option [value]="reason">{{ reason }}</option>
+              }
+            </select>
+          </label>
+        }
+        <div class="detail-actions">
+          <button type="button" class="save-button" (click)="saveAvailability()">Guardar</button>
+          <button type="button" class="delete-button" (click)="deleteAvailability()">Eliminar</button>
+        </div>
+      </div>
     </article>
   </div>
 }

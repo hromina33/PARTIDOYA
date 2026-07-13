@@ -2,11 +2,17 @@ package com.partidoya.platform.courts.application.internal.commandservices;
 
 import com.partidoya.platform.courts.application.commandservices.CourtCommandService;
 import com.partidoya.platform.courts.domain.model.aggregates.Court;
+import com.partidoya.platform.courts.domain.model.aggregates.CourtAvailability;
 import com.partidoya.platform.courts.domain.model.aggregates.Reservation;
+import com.partidoya.platform.courts.domain.model.commands.CreateCourtAvailabilityCommand;
 import com.partidoya.platform.courts.domain.model.commands.CreateCourtCommand;
+import com.partidoya.platform.courts.domain.model.commands.DeleteCourtAvailabilityCommand;
 import com.partidoya.platform.courts.domain.model.commands.PublishCourtCommand;
 import com.partidoya.platform.courts.domain.model.commands.ReserveCourtCommand;
+import com.partidoya.platform.courts.domain.model.commands.UpdateCourtAvailabilityCommand;
 import com.partidoya.platform.courts.domain.model.commands.UpdateCourtCommand;
+import com.partidoya.platform.courts.domain.model.valueobjects.CourtAvailabilityType;
+import com.partidoya.platform.courts.domain.repositories.CourtAvailabilityRepository;
 import com.partidoya.platform.courts.domain.repositories.CourtRepository;
 import com.partidoya.platform.courts.domain.repositories.ReservationRepository;
 import com.partidoya.platform.courts.domain.services.PaymentProcessor;
@@ -26,13 +32,16 @@ import java.time.LocalDateTime;
 @Transactional
 public class CourtCommandServiceImpl implements CourtCommandService {
     private final CourtRepository courtRepository;
+    private final CourtAvailabilityRepository availabilityRepository;
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final PaymentProcessor paymentProcessor;
 
-    public CourtCommandServiceImpl(CourtRepository courtRepository, ReservationRepository reservationRepository,
+    public CourtCommandServiceImpl(CourtRepository courtRepository, CourtAvailabilityRepository availabilityRepository,
+                                   ReservationRepository reservationRepository,
                                    UserRepository userRepository, PaymentProcessor paymentProcessor) {
         this.courtRepository = courtRepository;
+        this.availabilityRepository = availabilityRepository;
         this.reservationRepository = reservationRepository;
         this.userRepository = userRepository;
         this.paymentProcessor = paymentProcessor;
@@ -88,8 +97,17 @@ public class CourtCommandServiceImpl implements CourtCommandService {
             throw new IllegalStateException("Cannot reserve past schedules");
         }
         var schedule = "%s-%s".formatted(command.startTime(), command.endTime());
-        if (!court.supportsSchedule(schedule)) {
+        var availability = availabilityRepository.findByCourtIdAndDate(command.courtId(), command.date());
+        var explicitlyAvailable = availability.stream()
+                .filter(item -> item.getType() == CourtAvailabilityType.AVAILABLE)
+                .anyMatch(item -> item.contains(command.date(), command.startTime(), command.endTime()));
+        if (!court.supportsSchedule(schedule) && !explicitlyAvailable) {
             throw new IllegalStateException("Selected schedule is not available for this court");
+        }
+        if (availability.stream()
+                .filter(item -> item.getType() == CourtAvailabilityType.BLOCKED)
+                .anyMatch(item -> item.overlaps(command.date(), command.startTime(), command.endTime()))) {
+            throw new ResourceConflictException("Availability", "schedule is blocked");
         }
         if (reservationRepository.existsOverlapping(command.courtId(), command.date(), command.startTime(), command.endTime())) {
             throw new ResourceConflictException("Reservation", "schedule already reserved");
@@ -113,6 +131,46 @@ public class CourtCommandServiceImpl implements CourtCommandService {
         return reservationRepository.save(reservation);
     }
 
+    @Override
+    public CourtAvailability handle(CreateCourtAvailabilityCommand command) {
+        ensureCanManageCourts(command.requesterId());
+        var court = courtRepository.findById(command.courtId())
+                .orElseThrow(() -> new ResourceNotFoundException("Court", command.courtId().value().toString()));
+        ensureOwner(court, command.requesterId());
+        var availability = new CourtAvailability(command.courtId(), command.date(), command.allDay(),
+                command.startTime(), command.endTime(), command.type(), command.reason());
+        ensureAvailabilityDoesNotOverlap(availability, null);
+        return availabilityRepository.save(availability);
+    }
+
+    @Override
+    public CourtAvailability handle(UpdateCourtAvailabilityCommand command) {
+        ensureCanManageCourts(command.requesterId());
+        var availability = availabilityRepository.findById(command.availabilityId())
+                .orElseThrow(() -> new ResourceNotFoundException("CourtAvailability", command.availabilityId().value().toString()));
+        var court = courtRepository.findById(command.courtId())
+                .orElseThrow(() -> new ResourceNotFoundException("Court", command.courtId().value().toString()));
+        ensureOwner(court, command.requesterId());
+        if (!availability.getCourtId().value().equals(command.courtId().value())) {
+            throw new IllegalArgumentException("Availability cannot be moved to another court");
+        }
+        availability.update(command.date(), command.allDay(), command.startTime(), command.endTime(),
+                command.type(), command.reason());
+        ensureAvailabilityDoesNotOverlap(availability, command.availabilityId());
+        return availabilityRepository.save(availability);
+    }
+
+    @Override
+    public void handle(DeleteCourtAvailabilityCommand command) {
+        ensureCanManageCourts(command.requesterId());
+        var availability = availabilityRepository.findById(command.availabilityId())
+                .orElseThrow(() -> new ResourceNotFoundException("CourtAvailability", command.availabilityId().value().toString()));
+        var court = courtRepository.findById(availability.getCourtId())
+                .orElseThrow(() -> new ResourceNotFoundException("Court", availability.getCourtId().value().toString()));
+        ensureOwner(court, command.requesterId());
+        availabilityRepository.delete(availability);
+    }
+
     private void ensureCanManageCourts(UserId ownerId) {
         var owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", ownerId.value().toString()));
@@ -124,6 +182,14 @@ public class CourtCommandServiceImpl implements CourtCommandService {
     private void ensureOwner(Court court, UserId requesterId) {
         if (!court.getOwnerId().value().equals(requesterId.value())) {
             throw new ForbiddenActionException("Only the court owner can modify this court");
+        }
+    }
+
+    private void ensureAvailabilityDoesNotOverlap(CourtAvailability availability,
+                                                  com.partidoya.platform.courts.domain.model.valueobjects.CourtAvailabilityId excludedId) {
+        if (availabilityRepository.existsOverlapping(availability.getCourtId(), availability.getDate(),
+                availability.getStartTime(), availability.getEndTime(), excludedId)) {
+            throw new ResourceConflictException("CourtAvailability", "schedule overlaps an existing record");
         }
     }
 

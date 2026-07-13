@@ -68,16 +68,19 @@
           }
           <label>
             Fecha
-            <input type="date" [(ngModel)]="selectedDate" [disabled]="paymentLocked || !!reservation">
+            <input type="date" [(ngModel)]="selectedDate" (change)="loadAvailableSchedules()" [disabled]="paymentLocked || !!reservation">
           </label>
           <label>
             Horario
             <select [(ngModel)]="selectedSchedule" [disabled]="paymentLocked || !!reservation">
-              <option value="">Selecciona</option>
-              @for (schedule of court.schedules; track schedule) {
+              <option value="">{{ schedulesLoading ? 'Cargando...' : 'Selecciona' }}</option>
+              @for (schedule of availableSchedules; track schedule) {
                 <option [value]="schedule">{{ schedule }}</option>
               }
             </select>
+            @if (selectedDate && !schedulesLoading && availableSchedules.length === 0) {
+              <small class="field-note">No hay horarios disponibles para esta fecha.</small>
+            }
           </label>
           <label>
             Método de pago

@@ -1,0 +1,119 @@
+<section class="reports-page">
+  <div class="container">
+    <header class="page-header">
+      <div>
+        <span>Reportes</span>
+        <h1>Ingresos y reservas</h1>
+        <p>Analiza el rendimiento real de tus canchas por periodo y reserva confirmada.</p>
+      </div>
+    </header>
+
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage }}</div>
+    }
+
+    <div class="filters">
+      <label>
+        Cancha
+        <select [(ngModel)]="selectedCourtId" (change)="loadReport()">
+          <option value="all">Todas las canchas</option>
+          @for (court of courts; track court.id) {
+            <option [value]="court.id">{{ court.name }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Periodo
+        <select [(ngModel)]="period" (change)="onPeriodChange()">
+          <option value="this-month">Este mes</option>
+          <option value="last-month">Mes anterior</option>
+          <option value="custom">Rango personalizado</option>
+        </select>
+      </label>
+      @if (period === 'custom') {
+        <label>
+          Desde
+          <input type="date" [(ngModel)]="customFrom" (change)="loadReport()">
+        </label>
+        <label>
+          Hasta
+          <input type="date" [(ngModel)]="customTo" (change)="loadReport()">
+        </label>
+      }
+    </div>
+
+    @if (loading) {
+      <div class="state-box">Calculando reporte...</div>
+    } @else if (report) {
+      <div class="kpi-grid">
+        <article>
+          <span>Ingresos</span>
+          <strong>S/ {{ report.totalIncome | number:'1.2-2' }}</strong>
+        </article>
+        <article>
+          <span>Confirmadas</span>
+          <strong>{{ report.confirmedReservations }}</strong>
+        </article>
+        <article>
+          <span>Canceladas</span>
+          <strong>{{ report.canceledReservations }}</strong>
+        </article>
+        <article>
+          <span>Ocupacion</span>
+          <strong>{{ report.occupancyPercentage | number:'1.0-1' }}%</strong>
+        </article>
+        <article>
+          <span>Ticket promedio</span>
+          <strong>S/ {{ report.averageTicket | number:'1.2-2' }}</strong>
+        </article>
+      </div>
+
+      <div class="reports-layout">
+        <section class="chart-panel">
+          <div class="panel-title">
+            <h2>Ingresos por dia</h2>
+            <span>{{ report.from }} - {{ report.to }}</span>
+          </div>
+          @if (report.dailyIncome.length === 0 || report.confirmedReservations === 0) {
+            <div class="state-box compact">No hay ingresos confirmados en este periodo.</div>
+          } @else {
+            <div class="bar-chart">
+              @for (day of report.dailyIncome; track day.date) {
+                <div class="bar-item">
+                  <div class="bar-track">
+                    <div class="bar-fill" [style.height]="barHeight(day.income)"></div>
+                  </div>
+                  <small>{{ formatDay(day.date) }}</small>
+                </div>
+              }
+            </div>
+          }
+        </section>
+
+        <aside class="ranking-panel">
+          <div class="panel-title">
+            <h2>Ranking de canchas</h2>
+          </div>
+          @if (!report.topCourt) {
+            <div class="state-box compact">Sin reservas confirmadas.</div>
+          } @else {
+            <article class="top-court">
+              <span>Mas reservada</span>
+              <strong>{{ report.topCourt.courtName }}</strong>
+              <p>{{ report.topCourt.reservations }} reservas &middot; {{ report.topCourt.percentage | number:'1.0-1' }}%</p>
+            </article>
+            <div class="ranking-list">
+              @for (court of report.ranking; track court.courtId) {
+                <div class="ranking-item">
+                  <span>{{ court.courtName }}</span>
+                  <strong>{{ court.reservations }}</strong>
+                  <div class="progress"><i [style.width.%]="court.percentage"></i></div>
+                </div>
+              }
+            </div>
+          }
+        </aside>
+      </div>
+    }
+  </div>
+</section>

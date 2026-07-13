@@ -190,6 +190,12 @@
   }
 }
 
+.field-note {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .reservation-summary {
   display: grid;
   grid-template-columns: 1fr auto;

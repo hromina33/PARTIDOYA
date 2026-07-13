@@ -76,6 +76,55 @@ export interface ManagedReservationResponse {
   createdAt: string;
 }
 
+export interface CourtAvailabilityResponse {
+  id: number;
+  courtId: number;
+  courtName: string;
+  date: string;
+  allDay: boolean;
+  startTime: string;
+  endTime: string;
+  type: 'AVAILABLE' | 'BLOCKED';
+  reason: string | null;
+  createdAt: string;
+}
+
+export interface SaveCourtAvailabilityRequest {
+  courtId: number;
+  date: string;
+  allDay: boolean;
+  startTime: string;
+  endTime: string;
+  type: 'AVAILABLE' | 'BLOCKED';
+  reason: string | null;
+}
+
+export interface DailyIncomeResponse {
+  date: string;
+  income: number;
+  reservations: number;
+}
+
+export interface CourtRankingResponse {
+  courtId: number;
+  courtName: string;
+  reservations: number;
+  percentage: number;
+}
+
+export interface CourtReportResponse {
+  from: string;
+  to: string;
+  totalIncome: number;
+  confirmedReservations: number;
+  canceledReservations: number;
+  occupancyPercentage: number;
+  averageTicket: number;
+  dailyIncome: DailyIncomeResponse[];
+  topCourt: CourtRankingResponse | null;
+  ranking: CourtRankingResponse[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class CourtService {
   private readonly apiUrl = `${environment.apiUrl}/courts`;
@@ -106,6 +155,40 @@ export class CourtService {
     let params = new HttpParams().set('from', from).set('to', to);
     if (courtId) params = params.set('courtId', courtId);
     return this.http.get<ManagedReservationResponse[]>(`${this.apiUrl}/managed/${ownerId}/reservations`, { params });
+  }
+
+  getManagedAvailability(ownerId: number, from: string, to: string, courtId?: number): Observable<CourtAvailabilityResponse[]> {
+    let params = new HttpParams().set('from', from).set('to', to);
+    if (courtId) params = params.set('courtId', courtId);
+    return this.http.get<CourtAvailabilityResponse[]>(`${this.apiUrl}/managed/${ownerId}/availability`, { params });
+  }
+
+  createAvailability(ownerId: number, request: SaveCourtAvailabilityRequest): Observable<CourtAvailabilityResponse> {
+    return this.http.post<CourtAvailabilityResponse>(`${this.apiUrl}/managed/${ownerId}/availability`, request);
+  }
+
+  updateAvailability(
+    ownerId: number,
+    availabilityId: number,
+    request: SaveCourtAvailabilityRequest
+  ): Observable<CourtAvailabilityResponse> {
+    return this.http.put<CourtAvailabilityResponse>(`${this.apiUrl}/managed/${ownerId}/availability/${availabilityId}`, request);
+  }
+
+  deleteAvailability(ownerId: number, availabilityId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/managed/${ownerId}/availability/${availabilityId}`);
+  }
+
+  getAvailableSchedules(id: number, date: string): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/${id}/available-schedules`, {
+      params: new HttpParams().set('date', date)
+    });
+  }
+
+  getManagedReport(ownerId: number, from: string, to: string, courtId?: number): Observable<CourtReportResponse> {
+    let params = new HttpParams().set('from', from).set('to', to);
+    if (courtId) params = params.set('courtId', courtId);
+    return this.http.get<CourtReportResponse>(`${this.apiUrl}/managed/${ownerId}/reports`, { params });
   }
 
   createCourt(request: SaveCourtRequest): Observable<CourtResponse> {

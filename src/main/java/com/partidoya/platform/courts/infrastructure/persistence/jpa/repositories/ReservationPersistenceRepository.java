@@ -18,6 +18,10 @@ public interface ReservationPersistenceRepository extends JpaRepository<Reservat
 
     List<ReservationPersistenceEntity> findByCourtId(Long courtId);
 
+    List<ReservationPersistenceEntity> findByCourtIdAndDateOrderByStartTimeAsc(Long courtId, LocalDate date);
+
     List<ReservationPersistenceEntity> findByCourtIdInAndDateBetweenOrderByDateAscStartTimeAsc(
             Collection<Long> courtIds, LocalDate from, LocalDate to);
+
+    long countByUserId(Long userId);
 }

@@ -27,6 +27,8 @@ export class CanchaDetailComponent implements OnInit, AfterViewInit {
 
   selectedDate = '';
   selectedSchedule = '';
+  availableSchedules: string[] = [];
+  schedulesLoading = false;
   paymentMethod = 'Culqi Sandbox';
   reserving = false;
   paymentLocked = false;
@@ -88,6 +90,7 @@ export class CanchaDetailComponent implements OnInit, AfterViewInit {
     this.courtService.getCourtById(id).subscribe({
       next: (court) => {
         this.court = court;
+        this.availableSchedules = court.schedules;
         this.loading = false;
         this.cdr.detectChanges();
         this.tryInitMap();
@@ -95,6 +98,26 @@ export class CanchaDetailComponent implements OnInit, AfterViewInit {
       error: (err) => {
         this.errorMessage = err.error?.message || 'Cancha no encontrada.';
         this.loading = false;
+      }
+    });
+  }
+
+  loadAvailableSchedules(): void {
+    this.selectedSchedule = '';
+    this.availableSchedules = [];
+    if (!this.court || !this.selectedDate) {
+      this.availableSchedules = this.court?.schedules || [];
+      return;
+    }
+    this.schedulesLoading = true;
+    this.courtService.getAvailableSchedules(this.court.id, this.selectedDate).subscribe({
+      next: schedules => {
+        this.availableSchedules = schedules;
+        this.schedulesLoading = false;
+      },
+      error: err => {
+        this.errorMessage = err.error?.message || 'No se pudieron cargar los horarios disponibles.';
+        this.schedulesLoading = false;
       }
     });
   }
@@ -140,6 +163,7 @@ export class CanchaDetailComponent implements OnInit, AfterViewInit {
         this.reservation = reservation;
         this.successMessage = 'Pago realizado correctamente. Reserva confirmada.';
         this.reserving = false;
+        this.loadAvailableSchedules();
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'No se pudo procesar el pago.';

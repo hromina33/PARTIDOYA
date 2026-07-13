@@ -1,0 +1,130 @@
+<section class="availability-page">
+  <div class="container">
+    <header class="page-header">
+      <div>
+        <span>Disponibilidad</span>
+        <h1>Gestiona horarios de tus canchas</h1>
+        <p>Crea bloqueos por mantenimiento, eventos privados o habilita horarios puntuales para reservas.</p>
+      </div>
+    </header>
+
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage }}</div>
+    }
+    @if (successMessage) {
+      <div class="alert alert-success">{{ successMessage }}</div>
+    }
+
+    <div class="availability-layout">
+      <form class="availability-form" (submit)="$event.preventDefault(); save()">
+        <div class="form-title">
+          <h2>{{ editingId ? 'Editar horario' : 'Nuevo horario' }}</h2>
+          @if (editingId) {
+            <button type="button" class="link-button" (click)="resetForm()">Cancelar</button>
+          }
+        </div>
+
+        <label>
+          Cancha
+          <select name="courtId" [(ngModel)]="form.courtId" required>
+            @for (court of courts; track court.id) {
+              <option [value]="court.id">{{ court.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          Fecha
+          <input type="date" name="date" [(ngModel)]="form.date" required>
+        </label>
+
+        <label class="check-row">
+          <input type="checkbox" name="allDay" [(ngModel)]="form.allDay" (change)="onAllDayChange()">
+          <span>Todo el dia</span>
+        </label>
+
+        <div class="form-grid">
+          <label>
+            Inicio
+            <select name="startTime" [(ngModel)]="form.startTime" [disabled]="form.allDay">
+              @for (time of timeOptions.slice(0, -1); track time) {
+                <option [value]="time">{{ time }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            Fin
+            <select name="endTime" [(ngModel)]="form.endTime" [disabled]="form.allDay">
+              @for (time of timeOptions.slice(1); track time) {
+                <option [value]="time">{{ time }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Tipo
+          <select name="type" [(ngModel)]="form.type">
+            <option value="AVAILABLE">Disponible</option>
+            <option value="BLOCKED">Bloqueado</option>
+          </select>
+        </label>
+
+        @if (form.type === 'BLOCKED') {
+          <label>
+            Motivo
+            <select name="reason" [(ngModel)]="form.reason">
+              @for (reason of reasons; track reason) {
+                <option [value]="reason">{{ reason }}</option>
+              }
+            </select>
+          </label>
+        }
+
+        <button type="submit" class="primary-action" [disabled]="saving || courts.length === 0">
+          {{ saving ? 'Guardando...' : 'Guardar disponibilidad' }}
+        </button>
+      </form>
+
+      <main class="records-panel">
+        <div class="panel-header">
+          <h2>Registros</h2>
+          <label>
+            <span>Filtrar</span>
+            <select [(ngModel)]="selectedFilterCourt">
+              <option value="all">Todas</option>
+              @for (court of courts; track court.id) {
+                <option [value]="court.id">{{ court.name }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        @if (loading) {
+          <div class="state-box">Cargando horarios...</div>
+        } @else if (filteredRecords.length === 0) {
+          <div class="state-box">No hay registros en el periodo cercano.</div>
+        } @else {
+          <div class="record-list">
+            @for (record of filteredRecords; track record.id) {
+              <article class="record-card" [class.blocked]="record.type === 'BLOCKED'">
+                <div>
+                  <span>{{ typeLabel(record.type) }}</span>
+                  <h3>{{ record.courtName }}</h3>
+                  <p>{{ record.date }} &middot; {{ shortTime(record.startTime) }}-{{ shortTime(record.endTime) }}</p>
+                  @if (record.reason) {
+                    <small>{{ record.reason }}</small>
+                  }
+                </div>
+                <div class="record-actions">
+                  <button type="button" class="secondary-action" (click)="edit(record)">Editar</button>
+                  <button type="button" class="danger-action" (click)="remove(record)">Eliminar</button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </main>
+    </div>
+  </div>
+</section>

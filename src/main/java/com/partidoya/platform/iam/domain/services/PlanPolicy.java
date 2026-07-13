@@ -9,11 +9,15 @@ public final class PlanPolicy {
     }
 
     public static boolean canUsePlayerFeatures(User user) {
-        return user != null && user.getRole() == Role.JUGADOR && isPlayerPlan(user.getPlan());
+        return user != null && user.isActive() && user.getRole() == Role.JUGADOR && isPlayerPlan(user.getPlan());
     }
 
     public static boolean canManageCourts(User user) {
-        return user != null && user.getRole() == Role.ADMIN_CANCHA && isCourtPlan(user.getPlan());
+        return user != null && user.isActive() && user.getRole() == Role.ADMIN_CANCHA && isCourtPlan(user.getPlan());
+    }
+
+    public static boolean canManagePlatform(User user) {
+        return user != null && user.isActive() && user.getRole() == Role.ADMIN_GENERAL && user.getPlan() == Plan.ADMIN_GENERAL;
     }
 
     public static boolean isPlayerPlan(Plan plan) {

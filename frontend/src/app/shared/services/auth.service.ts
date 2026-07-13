@@ -19,6 +19,10 @@ export interface UserResponse {
   emailVerified: boolean;
   role: string;
   plan: string;
+  status?: string;
+  suspensionReason?: string | null;
+  suspendedUntil?: string | null;
+  lastAdministrativeActionAt?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -94,6 +98,10 @@ export class AuthService {
   isCourtPlan(): boolean {
     const plan = this.getPlan();
     return this.getRole() === 'ADMIN_CANCHA' && (plan === 'CANCHA_EMPRENDEDOR' || plan === 'CANCHA_BUSINESS');
+  }
+
+  isPlatformAdmin(): boolean {
+    return this.getRole() === 'ADMIN_GENERAL' && this.getPlan() === 'ADMIN_GENERAL';
   }
 
   dashboardRoute(): string {

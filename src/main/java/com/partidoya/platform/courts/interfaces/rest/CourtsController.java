@@ -2,22 +2,35 @@ package com.partidoya.platform.courts.interfaces.rest;
 
 import com.partidoya.platform.courts.application.commandservices.CourtCommandService;
 import com.partidoya.platform.courts.application.queryservices.CourtQueryService;
+import com.partidoya.platform.courts.domain.model.commands.CreateCourtAvailabilityCommand;
+import com.partidoya.platform.courts.domain.model.commands.DeleteCourtAvailabilityCommand;
 import com.partidoya.platform.courts.domain.model.commands.PublishCourtCommand;
 import com.partidoya.platform.courts.domain.model.commands.ReserveCourtCommand;
+import com.partidoya.platform.courts.domain.model.commands.UpdateCourtAvailabilityCommand;
 import com.partidoya.platform.courts.domain.model.queries.GetCourtByIdQuery;
+import com.partidoya.platform.courts.domain.model.queries.GetManagedAvailabilityQuery;
 import com.partidoya.platform.courts.domain.model.queries.GetManagedCourtsQuery;
+import com.partidoya.platform.courts.domain.model.queries.GetManagedCourtReportQuery;
 import com.partidoya.platform.courts.domain.model.queries.GetManagedReservationsQuery;
+import com.partidoya.platform.courts.domain.model.queries.GetReservableSchedulesQuery;
 import com.partidoya.platform.courts.domain.model.queries.SearchPublishedCourtsQuery;
+import com.partidoya.platform.courts.domain.model.valueobjects.CourtAvailabilityId;
+import com.partidoya.platform.courts.domain.model.valueobjects.CourtAvailabilityType;
 import com.partidoya.platform.courts.domain.model.valueobjects.CourtId;
+import com.partidoya.platform.courts.interfaces.rest.resources.CourtAvailabilityResource;
+import com.partidoya.platform.courts.interfaces.rest.resources.CourtReportResource;
 import com.partidoya.platform.courts.interfaces.rest.resources.CourtResource;
 import com.partidoya.platform.courts.interfaces.rest.resources.CreateCourtResource;
 import com.partidoya.platform.courts.interfaces.rest.resources.ManagedReservationResource;
 import com.partidoya.platform.courts.interfaces.rest.resources.PublishCourtResource;
 import com.partidoya.platform.courts.interfaces.rest.resources.ReservationResource;
 import com.partidoya.platform.courts.interfaces.rest.resources.ReserveCourtResource;
+import com.partidoya.platform.courts.interfaces.rest.resources.SaveCourtAvailabilityResource;
 import com.partidoya.platform.courts.interfaces.rest.resources.UpdateCourtResource;
 import com.partidoya.platform.courts.interfaces.rest.transform.CourtCommandFromResourceAssembler;
+import com.partidoya.platform.courts.interfaces.rest.transform.CourtAvailabilityResourceFromEntityAssembler;
 import com.partidoya.platform.courts.interfaces.rest.transform.CourtResourceFromEntityAssembler;
+import com.partidoya.platform.courts.interfaces.rest.transform.CourtReportResourceFromEntityAssembler;
 import com.partidoya.platform.courts.interfaces.rest.transform.ManagedReservationResourceFromEntityAssembler;
 import com.partidoya.platform.courts.interfaces.rest.transform.ReservationResourceFromEntityAssembler;
 import com.partidoya.platform.iam.domain.model.valueobjects.UserId;
@@ -26,6 +39,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -68,6 +82,13 @@ public class CourtsController {
         return ResponseEntity.ok(CourtResourceFromEntityAssembler.toResourceFromEntity(court));
     }
 
+    @GetMapping("/{courtId}/available-schedules")
+    public ResponseEntity<List<String>> getAvailableSchedules(
+            @PathVariable Long courtId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(courtQueryService.handle(new GetReservableSchedulesQuery(new CourtId(courtId), date)));
+    }
+
     @GetMapping("/managed/{ownerId}")
     public ResponseEntity<List<CourtResource>> getManagedCourts(@PathVariable Long ownerId) {
         var courts = courtQueryService.handle(new GetManagedCourtsQuery(new UserId(ownerId)));
@@ -87,6 +108,83 @@ public class CourtsController {
                 .map(ManagedReservationResourceFromEntityAssembler::toResourceFromEntity)
                 .toList();
         return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/managed/{ownerId}/availability")
+    public ResponseEntity<List<CourtAvailabilityResource>> getManagedAvailability(
+            @PathVariable Long ownerId,
+            @RequestParam(required = false) Long courtId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        var availability = courtQueryService.handle(new GetManagedAvailabilityQuery(new UserId(ownerId),
+                courtId == null ? null : new CourtId(courtId), from, to));
+        var body = availability.stream()
+                .map(CourtAvailabilityResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(body);
+    }
+
+    @PostMapping("/managed/{ownerId}/availability")
+    public ResponseEntity<CourtAvailabilityResource> createAvailability(
+            @PathVariable Long ownerId,
+            @RequestBody SaveCourtAvailabilityResource resource) {
+        var availability = courtCommandService.handle(new CreateCourtAvailabilityCommand(
+                new UserId(ownerId),
+                new CourtId(resource.courtId()),
+                resource.date(),
+                resource.allDay(),
+                resource.startTime(),
+                resource.endTime(),
+                CourtAvailabilityType.valueOf(resource.type()),
+                resource.reason()));
+        var view = courtQueryService.handle(new GetManagedAvailabilityQuery(new UserId(ownerId),
+                        new CourtId(availability.getCourtId().value()), availability.getDate(), availability.getDate()))
+                .stream()
+                .filter(item -> item.id().equals(availability.getId().value()))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("CourtAvailability", availability.getId().value().toString()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(CourtAvailabilityResourceFromEntityAssembler.toResourceFromEntity(view));
+    }
+
+    @PutMapping("/managed/{ownerId}/availability/{availabilityId}")
+    public ResponseEntity<CourtAvailabilityResource> updateAvailability(
+            @PathVariable Long ownerId,
+            @PathVariable Long availabilityId,
+            @RequestBody SaveCourtAvailabilityResource resource) {
+        var availability = courtCommandService.handle(new UpdateCourtAvailabilityCommand(
+                new UserId(ownerId),
+                new CourtAvailabilityId(availabilityId),
+                new CourtId(resource.courtId()),
+                resource.date(),
+                resource.allDay(),
+                resource.startTime(),
+                resource.endTime(),
+                CourtAvailabilityType.valueOf(resource.type()),
+                resource.reason()));
+        var view = courtQueryService.handle(new GetManagedAvailabilityQuery(new UserId(ownerId),
+                        new CourtId(availability.getCourtId().value()), availability.getDate(), availability.getDate()))
+                .stream()
+                .filter(item -> item.id().equals(availability.getId().value()))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("CourtAvailability", availability.getId().value().toString()));
+        return ResponseEntity.ok(CourtAvailabilityResourceFromEntityAssembler.toResourceFromEntity(view));
+    }
+
+    @DeleteMapping("/managed/{ownerId}/availability/{availabilityId}")
+    public ResponseEntity<Void> deleteAvailability(@PathVariable Long ownerId, @PathVariable Long availabilityId) {
+        courtCommandService.handle(new DeleteCourtAvailabilityCommand(new UserId(ownerId), new CourtAvailabilityId(availabilityId)));
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/managed/{ownerId}/reports")
+    public ResponseEntity<CourtReportResource> getManagedReport(
+            @PathVariable Long ownerId,
+            @RequestParam(required = false) Long courtId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        var report = courtQueryService.handle(new GetManagedCourtReportQuery(new UserId(ownerId),
+                courtId == null ? null : new CourtId(courtId), from, to));
+        return ResponseEntity.ok(CourtReportResourceFromEntityAssembler.toResourceFromEntity(report));
     }
 
     @PostMapping

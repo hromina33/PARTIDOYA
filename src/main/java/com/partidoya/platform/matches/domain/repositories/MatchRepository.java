@@ -15,4 +15,5 @@ public interface MatchRepository {
     List<Match> findAllByStatusAndSport(MatchStatus status, String sport);
     List<Match> findAllByOrganizerId(UserId organizerId);
     List<Match> findAllByParticipantId(UserId participantId);
+    long countRelatedToUser(UserId userId);
 }
