@@ -1,0 +1,41 @@
+<section class="notifications-page">
+  <div class="container">
+    <header class="notifications-header">
+      <span>Notificaciones</span>
+      <h1>Solicitudes con comprobante</h1>
+      <p>Revisa los pagos enviados por jugadores para unirse a tus pichangas.</p>
+    </header>
+
+    @if (notificationService.notifications$ | async; as notifications) {
+      @if (notifications.length === 0) {
+        <div class="empty-state">
+          <h2>No hay notificaciones pendientes</h2>
+          <p>Cuando alguien adjunte un comprobante de Yape, aparecerá aquí automáticamente.</p>
+        </div>
+      } @else {
+        <div class="notifications-list">
+          @for (notification of notifications; track notification.id) {
+            <a
+              class="notification-card"
+              [class.pending]="notificationService.isPending(notification)"
+              [routerLink]="['/notificaciones', notification.matchId, notification.requestId]">
+              <div>
+                <div class="notification-topline">
+                  <strong>{{ notification.playerName }}</strong>
+                  <span [class]="'status status-' + notification.status.toLowerCase()">
+                    {{ statusLabel(notification.status) }}
+                  </span>
+                </div>
+                <h2>{{ notification.matchTitle }}</h2>
+                <p>{{ formatDate(notification.submittedAt) }}</p>
+              </div>
+              @if (notification.hasProof) {
+                <span class="proof-pill">Comprobante adjunto</span>
+              }
+            </a>
+          }
+        </div>
+      }
+    }
+  </div>
+</section>

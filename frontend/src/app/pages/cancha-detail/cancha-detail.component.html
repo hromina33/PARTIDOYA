@@ -37,6 +37,9 @@
           <section class="glass-card">
             <h2>Mapa</h2>
             <div #mapContainer class="map-canvas"></div>
+            @if (mapLoading) {
+              <p class="map-status">Cargando mapa...</p>
+            }
             @if (mapError) {
               <p class="map-error">{{ mapError }}</p>
             }
@@ -65,11 +68,11 @@
           }
           <label>
             Fecha
-            <input type="date" [(ngModel)]="selectedDate">
+            <input type="date" [(ngModel)]="selectedDate" [disabled]="paymentLocked || !!reservation">
           </label>
           <label>
             Horario
-            <select [(ngModel)]="selectedSchedule">
+            <select [(ngModel)]="selectedSchedule" [disabled]="paymentLocked || !!reservation">
               <option value="">Selecciona</option>
               @for (schedule of court.schedules; track schedule) {
                 <option [value]="schedule">{{ schedule }}</option>
@@ -78,7 +81,7 @@
           </label>
           <label>
             Método de pago
-            <select [(ngModel)]="paymentMethod">
+            <select [(ngModel)]="paymentMethod" [disabled]="paymentLocked || !!reservation">
               <option value="Culqi Sandbox">Culqi Sandbox</option>
             </select>
           </label>

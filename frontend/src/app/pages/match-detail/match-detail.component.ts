@@ -7,6 +7,7 @@ import { AuthService } from '../../shared/services/auth.service';
 import { MapsLoaderService } from '../../shared/services/maps-loader.service';
 import { GeolocationService } from '../../shared/services/geolocation.service';
 import { environment } from '../../../environments/environment';
+import { NotificationService } from '../../shared/services/notification.service';
 
 @Component({
   selector: 'app-match-detail',
@@ -16,6 +17,7 @@ import { environment } from '../../../environments/environment';
 })
 export class MatchDetailComponent implements OnInit {
   @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild('proofInput') proofInput?: ElementRef<HTMLInputElement>;
 
   match: MatchResponse | null = null;
   loading = true;
@@ -31,12 +33,24 @@ export class MatchDetailComponent implements OnInit {
   proofSubmitting = false;
   proofMessage = '';
   rejectReason = '';
+  reportTargetId: number | null = null;
+  reportReason = 'Comportamiento antideportivo';
+  reportDetails = '';
+  reportConfirmation = '';
+  readonly reportReasons = [
+    'Comportamiento antideportivo',
+    'Insultos o acoso',
+    'Inasistencia',
+    'Informacion falsa',
+    'Otro motivo'
+  ];
 
   constructor(
     private matchService: MatchService,
     private authService: AuthService,
     private mapsLoader: MapsLoaderService,
     private geolocation: GeolocationService,
+    private notificationService: NotificationService,
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef
@@ -81,6 +95,10 @@ export class MatchDetailComponent implements OnInit {
   get currentUserJoinRequest(): PlayerJoinRequestResponse | null {
     const userId = this.currentUserId;
     return this.joinRequests.find(request => request.playerId === userId) || null;
+  }
+
+  get proofFileName(): string {
+    return this.proofFile?.name || '';
   }
 
   get filledPercent(): number {
@@ -186,6 +204,7 @@ export class MatchDetailComponent implements OnInit {
     const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!allowed.includes(file.type) || file.size === 0 || file.size > 5 * 1024 * 1024) {
       this.proofMessage = 'Adjunta una imagen JPG, PNG o WEBP de maximo 5 MB.';
+      input.value = '';
       return;
     }
     this.proofFile = file;
@@ -197,17 +216,31 @@ export class MatchDetailComponent implements OnInit {
     reader.readAsDataURL(file);
   }
 
+  clearProof(): void {
+    this.proofFile = null;
+    this.proofPreview = null;
+    this.proofMessage = '';
+    if (this.proofInput) {
+      this.proofInput.nativeElement.value = '';
+    }
+  }
+
   submitProof(): void {
-    if (!this.match || !this.currentUserId || !this.proofFile) return;
+    if (this.proofSubmitting) return;
+    if (!this.match || !this.currentUserId) return;
+    if (!this.proofFile) {
+      this.proofMessage = 'Adjunta el comprobante antes de enviar la solicitud.';
+      return;
+    }
     this.proofSubmitting = true;
     this.proofMessage = '';
     this.matchService.submitJoinProof(this.match.id, this.currentUserId, this.proofFile).subscribe({
       next: () => {
         this.proofSubmitting = false;
-        this.proofFile = null;
-        this.proofPreview = null;
+        this.clearProof();
         this.proofMessage = 'El pago esta siendo verificado.';
         this.loadJoinRequests();
+        this.notificationService.refresh();
       },
       error: (err) => {
         this.proofSubmitting = false;
@@ -217,10 +250,39 @@ export class MatchDetailComponent implements OnInit {
     });
   }
 
+  joinRequestStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      PENDING_PAYMENT_VERIFICATION: 'Comprobante pendiente de revision.',
+      CONFIRMED: 'Comprobante aprobado.',
+      REJECTED: 'Comprobante rechazado.',
+      CANCELLED: 'Solicitud cancelada.'
+    };
+    return labels[status] || status;
+  }
+
+  openReportModal(playerId: number): void {
+    this.reportTargetId = playerId;
+    this.reportReason = 'Comportamiento antideportivo';
+    this.reportDetails = '';
+    this.reportConfirmation = '';
+  }
+
+  closeReportModal(): void {
+    this.reportTargetId = null;
+  }
+
+  submitReport(): void {
+    this.reportConfirmation = 'Reporte enviado.';
+    setTimeout(() => this.closeReportModal(), 700);
+  }
+
   approveRequest(request: PlayerJoinRequestResponse): void {
     if (!this.match || !this.currentUserId || !confirm('Aprobar este comprobante?')) return;
     this.matchService.approveJoinRequest(this.match.id, request.id, this.currentUserId).subscribe({
-      next: () => this.loadMatch(this.match!.id),
+      next: () => {
+        this.notificationService.refresh();
+        this.loadMatch(this.match!.id);
+      },
       error: (err) => {
         this.errorMessage = err.error?.message || 'No se pudo aprobar el comprobante.';
         this.cdr.detectChanges();
@@ -233,6 +295,7 @@ export class MatchDetailComponent implements OnInit {
     this.matchService.rejectJoinRequest(this.match.id, request.id, this.currentUserId, this.rejectReason).subscribe({
       next: () => {
         this.rejectReason = '';
+        this.notificationService.refresh();
         this.loadJoinRequests();
       },
       error: (err) => {

@@ -70,6 +70,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/mi-perfil/mi-perfil.component').then(m => m.MiPerfilComponent)
   },
   {
+    path: 'notificaciones',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/notificaciones/notificaciones.component').then(m => m.NotificacionesComponent)
+  },
+  {
+    path: 'notificaciones/:matchId/:requestId',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/notificacion-detalle/notificacion-detalle.component').then(m => m.NotificacionDetalleComponent)
+  },
+  {
     path: 'profile',
     redirectTo: 'mi-perfil'
   },

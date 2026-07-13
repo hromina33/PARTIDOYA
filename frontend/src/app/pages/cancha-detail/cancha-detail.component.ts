@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
@@ -13,7 +13,7 @@ import { PaymentService } from '../../shared/services/payment.service';
   templateUrl: './cancha-detail.component.html',
   styleUrl: './cancha-detail.component.scss'
 })
-export class CanchaDetailComponent implements OnInit {
+export class CanchaDetailComponent implements OnInit, AfterViewInit {
   @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
 
   court: CourtResponse | null = null;
@@ -21,11 +21,15 @@ export class CanchaDetailComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   mapError = '';
+  mapLoading = false;
+  private viewReady = false;
+  private mapInitialized = false;
 
   selectedDate = '';
   selectedSchedule = '';
   paymentMethod = 'Culqi Sandbox';
   reserving = false;
+  paymentLocked = false;
   reservation: ReservationResponse | null = null;
 
   constructor(
@@ -34,7 +38,8 @@ export class CanchaDetailComponent implements OnInit {
     private paymentService: PaymentService,
     private mapsLoader: MapsLoaderService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -46,8 +51,13 @@ export class CanchaDetailComponent implements OnInit {
     this.loadCourt(id);
   }
 
+  ngAfterViewInit(): void {
+    this.viewReady = true;
+    this.tryInitMap();
+  }
+
   get canReserve(): boolean {
-    return !!this.selectedDate && !!this.selectedSchedule && !this.reserving;
+    return !!this.selectedDate && !!this.selectedSchedule && !this.reserving && !this.paymentLocked && !this.reservation;
   }
 
   get primaryImage(): string | null {
@@ -79,7 +89,8 @@ export class CanchaDetailComponent implements OnInit {
       next: (court) => {
         this.court = court;
         this.loading = false;
-        setTimeout(() => this.initMap(), 0);
+        this.cdr.detectChanges();
+        this.tryInitMap();
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Cancha no encontrada.';
@@ -102,14 +113,24 @@ export class CanchaDetailComponent implements OnInit {
     }
     const [startTime, endTime] = this.selectedSchedule.split('-');
     this.reserving = true;
+    this.paymentLocked = true;
     this.errorMessage = '';
     this.successMessage = '';
+    const reservedDate = this.selectedDate;
+    const reservedSchedule = this.selectedSchedule;
     let culqiToken = '';
     try {
       culqiToken = await this.paymentService.openCulqiCheckout(this.totalToPay, `Reserva ${this.court.name}`);
     } catch (err: any) {
       this.errorMessage = err?.message || 'No se pudo procesar el pago.';
       this.reserving = false;
+      this.paymentLocked = false;
+      return;
+    }
+    if (reservedDate !== this.selectedDate || reservedSchedule !== this.selectedSchedule) {
+      this.errorMessage = 'La fecha u horario cambiaron durante el pago. Vuelve a iniciar la reserva.';
+      this.reserving = false;
+      this.paymentLocked = false;
       return;
     }
     const idempotencyKey = `reservation-${this.court.id}-${userId}-${this.selectedDate}-${startTime}-${Date.now()}`;
@@ -123,8 +144,15 @@ export class CanchaDetailComponent implements OnInit {
       error: (err) => {
         this.errorMessage = err.error?.message || 'No se pudo procesar el pago.';
         this.reserving = false;
+        this.paymentLocked = false;
       }
     });
+  }
+
+  private tryInitMap(): void {
+    if (!this.viewReady || !this.court || !this.mapContainer || this.mapInitialized) return;
+    this.mapInitialized = true;
+    requestAnimationFrame(() => this.initMap());
   }
 
   private async initMap(): Promise<void> {
@@ -134,6 +162,7 @@ export class CanchaDetailComponent implements OnInit {
       return;
     }
     try {
+      this.mapLoading = true;
       await this.mapsLoader.load();
       const google = window.google;
       const center = { lat: this.court.latitude, lng: this.court.longitude };
@@ -144,8 +173,13 @@ export class CanchaDetailComponent implements OnInit {
         zoomControl: true
       });
       new google.maps.Marker({ position: center, map, title: this.court.name });
+      google.maps.event.trigger(map, 'resize');
+      map.setCenter(center);
+      this.mapLoading = false;
     } catch {
+      this.mapLoading = false;
       this.mapError = 'No se pudo cargar el mapa.';
     }
+    this.cdr.detectChanges();
   }
 }

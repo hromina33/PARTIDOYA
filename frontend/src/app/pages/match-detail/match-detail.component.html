@@ -121,15 +121,21 @@
               <span>Organizador</span><strong>Jugador #{{ match.organizerId }}</strong>
             </div>
             @if (currentUserJoinRequest) {
-              <p class="proof-status">Estado: {{ currentUserJoinRequest.status }}</p>
+              <p class="proof-status">{{ joinRequestStatusLabel(currentUserJoinRequest.status) }}</p>
               @if (currentUserJoinRequest.rejectionReason) {
                 <p class="proof-status proof-rejected">Motivo: {{ currentUserJoinRequest.rejectionReason }}</p>
               }
             }
             @if (!currentUserJoinRequest || currentUserJoinRequest.status === 'REJECTED') {
-              <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onProofSelected($event)">
+              <input #proofInput type="file" accept="image/jpeg,image/jpg,image/png,image/webp" (change)="onProofSelected($event)">
               @if (proofPreview) {
-                <img [src]="proofPreview" class="proof-preview" alt="Vista previa del comprobante">
+                <div class="proof-preview-wrap">
+                  <img [src]="proofPreview" class="proof-preview" alt="Vista previa del comprobante">
+                  <div class="proof-file-row">
+                    <span>{{ proofFileName }}</span>
+                    <button type="button" class="btn-proof-clear" [disabled]="proofSubmitting" (click)="clearProof()">Eliminar</button>
+                  </div>
+                </div>
               }
               <button class="btn-join" [disabled]="!proofFile || proofSubmitting" (click)="submitProof()">
                 {{ proofSubmitting ? 'Enviando...' : 'Enviar comprobante' }}
@@ -187,6 +193,9 @@
                       Jugador #{{ pid }}
                     }
                   </span>
+                  <button type="button" class="report-button" (click)="openReportModal(pid)" aria-label="Reportar jugador">
+                    ⚑
+                  </button>
                 </li>
               }
             </ul>
@@ -202,5 +211,34 @@
         </div>
       </div>
     </div>
+    @if (reportTargetId !== null) {
+      <div class="report-modal-backdrop" (click)="closeReportModal()">
+        <div class="report-modal" (click)="$event.stopPropagation()">
+          <div class="report-modal-header">
+            <h2>Reportar jugador #{{ reportTargetId }}</h2>
+            <button type="button" class="modal-close" (click)="closeReportModal()" aria-label="Cerrar">×</button>
+          </div>
+          <div class="report-options">
+            @for (reason of reportReasons; track reason) {
+              <label>
+                <input type="radio" name="reportReason" [value]="reason" [(ngModel)]="reportReason">
+                {{ reason }}
+              </label>
+            }
+          </div>
+          <label class="report-details">
+            Detalles
+            <textarea [(ngModel)]="reportDetails" rows="4" placeholder="Agrega contexto opcional"></textarea>
+          </label>
+          @if (reportConfirmation) {
+            <p class="report-confirmation">{{ reportConfirmation }}</p>
+          }
+          <div class="report-actions">
+            <button type="button" class="btn-leave" (click)="closeReportModal()">Cancelar</button>
+            <button type="button" class="btn-cancel" (click)="submitReport()">Enviar reporte</button>
+          </div>
+        </div>
+      </div>
+    }
   }
 </section>

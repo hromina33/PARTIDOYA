@@ -1,0 +1,68 @@
+<section class="review-page">
+  <div class="container">
+    <a routerLink="/notificaciones" class="back-link">Volver a notificaciones</a>
+
+    @if (loading) {
+      <div class="state-card">Cargando solicitud...</div>
+    } @else if (errorMessage && !request) {
+      <div class="state-card state-error">{{ errorMessage }}</div>
+    } @else if (match && request) {
+      <div class="review-layout">
+        <main class="review-main">
+          <div class="panel">
+            <span class="panel-kicker">Comprobante de Yape</span>
+            <h1>{{ match.title }}</h1>
+            <p>{{ match.address }}</p>
+            <div class="meta-grid">
+              <div>
+                <span>Jugador</span>
+                <strong>{{ player?.fullName || ('Jugador #' + request.playerId) }}</strong>
+              </div>
+              <div>
+                <span>Partido</span>
+                <strong>{{ formatDate(match.matchDate) }}</strong>
+              </div>
+              <div>
+                <span>Monto</span>
+                <strong>S/ {{ request.amount | number:'1.2-2' }}</strong>
+              </div>
+              <div>
+                <span>Estado</span>
+                <strong>{{ statusLabel(request.status) }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel proof-panel">
+            <h2>Imagen adjunta</h2>
+            <img [src]="proofUrl" alt="Comprobante de Yape adjunto">
+          </div>
+        </main>
+
+        <aside class="review-actions panel">
+          <h2>Revisión</h2>
+          @if (successMessage) {
+            <div class="alert alert-success">{{ successMessage }}</div>
+          }
+          @if (errorMessage) {
+            <div class="alert alert-error">{{ errorMessage }}</div>
+          }
+          <label>
+            Mensaje para el jugador
+            <textarea [(ngModel)]="reviewMessage" rows="5" placeholder="Escribe una nota para acompañar la revisión"></textarea>
+          </label>
+          @if (canReview) {
+            <button type="button" class="btn-accept" [disabled]="processing" (click)="approve()">
+              {{ processing ? 'Procesando...' : 'Aceptar' }}
+            </button>
+            <button type="button" class="btn-reject" [disabled]="processing" (click)="reject()">
+              Rechazar
+            </button>
+          } @else {
+            <p class="handled-text">Esta solicitud ya fue atendida.</p>
+          }
+        </aside>
+      </div>
+    }
+  </div>
+</section>

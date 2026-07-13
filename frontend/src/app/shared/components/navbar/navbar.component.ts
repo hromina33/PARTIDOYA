@@ -1,21 +1,40 @@
-import { Component, ElementRef, HostListener } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, DoCheck, ElementRef, HostListener, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink],
+  imports: [CommonModule, RouterLink],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss'
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit, DoCheck {
   userMenuOpen = false;
+  private loadedForUserId: number | null = null;
 
   constructor(
     private authService: AuthService,
+    public notificationService: NotificationService,
     private router: Router,
     private elementRef: ElementRef<HTMLElement>
   ) {}
+
+  ngOnInit(): void {
+    if (this.isLoggedIn) {
+      this.notificationService.refresh();
+      this.loadedForUserId = this.authService.getUserId();
+    }
+  }
+
+  ngDoCheck(): void {
+    const userId = this.authService.getUserId();
+    if (userId !== this.loadedForUserId) {
+      this.loadedForUserId = userId;
+      this.notificationService.refresh();
+    }
+  }
 
   @HostListener('document:click', ['$event.target'])
   onDocumentClick(target: EventTarget | null): void {
@@ -51,6 +70,7 @@ export class NavbarComponent {
   logout(): void {
     this.closeUserMenu();
     this.authService.logout();
+    this.notificationService.refresh();
     this.router.navigate(['/']);
   }
 }

@@ -97,6 +97,7 @@ public class CourtCommandServiceImpl implements CourtCommandService {
         if (reservationRepository.existsByPaymentIdempotencyKey(command.idempotencyKey())) {
             throw new ResourceConflictException("Payment", "payment request already processed");
         }
+        ensurePaymentContextMatches(command);
         var reservation = reservationRepository.save(new Reservation(command.userId(), command.courtId(),
                 command.date(), command.startTime(), command.endTime(), court.getPricePerHour()));
         var payment = paymentProcessor.process(new PaymentRequest(reservation.getId().value(),
@@ -123,6 +124,18 @@ public class CourtCommandServiceImpl implements CourtCommandService {
     private void ensureOwner(Court court, UserId requesterId) {
         if (!court.getOwnerId().value().equals(requesterId.value())) {
             throw new ForbiddenActionException("Only the court owner can modify this court");
+        }
+    }
+
+    private static void ensurePaymentContextMatches(ReserveCourtCommand command) {
+        var key = command.idempotencyKey();
+        var expectedPrefix = "reservation-%d-%d-%s-%s-".formatted(
+                command.courtId().value(),
+                command.userId().value(),
+                command.date(),
+                command.startTime());
+        if (key == null || !key.startsWith(expectedPrefix)) {
+            throw new IllegalArgumentException("Payment context does not match the selected reservation");
         }
     }
 }

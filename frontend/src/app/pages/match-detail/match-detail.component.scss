@@ -505,6 +505,40 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.proof-preview-wrap {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 0.75rem;
+}
+
+.proof-file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: min(100%, 320px);
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.82rem;
+
+  span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.btn-proof-clear {
+  flex: none;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  border-radius: 999px;
+  background: rgba(248, 113, 113, 0.1);
+  color: #fca5a5;
+  padding: 0.35rem 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
 .proof-status {
   font-weight: 700;
   color: #c6f135 !important;
@@ -532,6 +566,107 @@
     color: rgba(255, 255, 255, 0.62);
     font-size: 0.85rem;
   }
+}
+
+.report-button {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  border-radius: 999px;
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
+  font-size: 0.9rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.report-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(5, 8, 14, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.report-modal {
+  width: min(100%, 420px);
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: #12172a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.report-modal-header,
+.report-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.report-modal-header {
+  margin-bottom: 1rem;
+
+  h2 {
+    font-size: 1rem;
+    color: #fff;
+  }
+}
+
+.modal-close {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+}
+
+.report-options {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.9rem;
+  }
+}
+
+.report-details {
+  display: grid;
+  gap: 0.45rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-weight: 800;
+  font-size: 0.82rem;
+  margin-bottom: 0.9rem;
+
+  textarea {
+    width: 100%;
+    resize: vertical;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    background: #0f1627;
+    color: #fff;
+    padding: 0.75rem;
+    font: inherit;
+  }
+}
+
+.report-confirmation {
+  color: #86efac;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
 }
 
 // --- Responsive ---
