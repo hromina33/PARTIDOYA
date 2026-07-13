@@ -23,7 +23,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   openMatchesCount = 0;
   almostFullCount = 0;
 
-  locationDenied = false;
   manualSearchQuery = '';
   manualSearchResults: MatchResponse[] = [];
   private allMatches: MatchResponse[] = [];
@@ -107,9 +106,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         .slice(0, 6);
       this.cdr.detectChanges();
     } catch {
-      // ubicación no disponible: ofrecemos búsqueda manual por distrito/dirección
-      this.locationDenied = true;
-      this.cdr.detectChanges();
+      // ubicación no disponible: el buscador manual sigue disponible
     }
   }
 
