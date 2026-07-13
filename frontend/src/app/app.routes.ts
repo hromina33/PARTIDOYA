@@ -55,6 +55,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/admin-canchas/admin-canchas.component').then(m => m.AdminCanchasComponent)
   },
   {
+    path: 'calendar',
+    canActivate: [courtAdminGuard],
+    loadComponent: () => import('./pages/calendar/calendar.component').then(m => m.CalendarComponent)
+  },
+  {
     path: 'mis-partidos',
     canActivate: [playerGuard],
     loadComponent: () => import('./pages/mis-partidos/mis-partidos.component').then(m => m.MisPartidosComponent)

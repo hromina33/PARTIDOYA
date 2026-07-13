@@ -6,6 +6,7 @@ import com.partidoya.platform.courts.domain.model.valueobjects.ReservationId;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,5 +16,6 @@ public interface ReservationRepository {
     boolean existsByPaymentIdempotencyKey(String paymentIdempotencyKey);
     boolean existsByProviderReference(String providerReference);
     List<Reservation> findByCourtId(CourtId courtId);
+    List<Reservation> findByCourtIds(Collection<CourtId> courtIds, LocalDate from, LocalDate to);
     Reservation save(Reservation reservation);
 }

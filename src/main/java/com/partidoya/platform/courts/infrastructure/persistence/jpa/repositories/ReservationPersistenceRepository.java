@@ -17,4 +17,7 @@ public interface ReservationPersistenceRepository extends JpaRepository<Reservat
     boolean existsByProviderReference(String providerReference);
 
     List<ReservationPersistenceEntity> findByCourtId(Long courtId);
+
+    List<ReservationPersistenceEntity> findByCourtIdInAndDateBetweenOrderByDateAscStartTimeAsc(
+            Collection<Long> courtIds, LocalDate from, LocalDate to);
 }

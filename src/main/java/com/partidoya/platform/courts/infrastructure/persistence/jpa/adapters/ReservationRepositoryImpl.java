@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,6 +49,16 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public List<Reservation> findByCourtId(CourtId courtId) {
         return reservationPersistenceRepository.findByCourtId(courtId.value()).stream()
+                .map(ReservationPersistenceAssembler::toDomainFromPersistence)
+                .toList();
+    }
+
+    @Override
+    public List<Reservation> findByCourtIds(Collection<CourtId> courtIds, LocalDate from, LocalDate to) {
+        var ids = courtIds.stream().map(CourtId::value).toList();
+        if (ids.isEmpty()) return List.of();
+        return reservationPersistenceRepository.findByCourtIdInAndDateBetweenOrderByDateAscStartTimeAsc(ids, from, to)
+                .stream()
                 .map(ReservationPersistenceAssembler::toDomainFromPersistence)
                 .toList();
     }

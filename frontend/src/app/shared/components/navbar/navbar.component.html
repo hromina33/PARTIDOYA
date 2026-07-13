@@ -39,6 +39,7 @@
             <div class="user-dropdown" role="menu">
               @if (canManageCourts) {
                 <a routerLink="/admin-canchas" class="dropdown-item" role="menuitem" (click)="closeUserMenu()">Administrar canchas</a>
+                <a routerLink="/calendar" class="dropdown-item" role="menuitem" (click)="closeUserMenu()">Calendario</a>
               }
               <a routerLink="/mi-perfil" class="dropdown-item" role="menuitem" (click)="closeUserMenu()">Mi perfil</a>
               <button type="button" class="dropdown-item" role="menuitem" (click)="logout()">Cerrar sesión</button>

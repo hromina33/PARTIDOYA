@@ -6,22 +6,26 @@ import com.partidoya.platform.courts.domain.model.commands.PublishCourtCommand;
 import com.partidoya.platform.courts.domain.model.commands.ReserveCourtCommand;
 import com.partidoya.platform.courts.domain.model.queries.GetCourtByIdQuery;
 import com.partidoya.platform.courts.domain.model.queries.GetManagedCourtsQuery;
+import com.partidoya.platform.courts.domain.model.queries.GetManagedReservationsQuery;
 import com.partidoya.platform.courts.domain.model.queries.SearchPublishedCourtsQuery;
 import com.partidoya.platform.courts.domain.model.valueobjects.CourtId;
 import com.partidoya.platform.courts.interfaces.rest.resources.CourtResource;
 import com.partidoya.platform.courts.interfaces.rest.resources.CreateCourtResource;
+import com.partidoya.platform.courts.interfaces.rest.resources.ManagedReservationResource;
 import com.partidoya.platform.courts.interfaces.rest.resources.PublishCourtResource;
 import com.partidoya.platform.courts.interfaces.rest.resources.ReservationResource;
 import com.partidoya.platform.courts.interfaces.rest.resources.ReserveCourtResource;
 import com.partidoya.platform.courts.interfaces.rest.resources.UpdateCourtResource;
 import com.partidoya.platform.courts.interfaces.rest.transform.CourtCommandFromResourceAssembler;
 import com.partidoya.platform.courts.interfaces.rest.transform.CourtResourceFromEntityAssembler;
+import com.partidoya.platform.courts.interfaces.rest.transform.ManagedReservationResourceFromEntityAssembler;
 import com.partidoya.platform.courts.interfaces.rest.transform.ReservationResourceFromEntityAssembler;
 import com.partidoya.platform.iam.domain.model.valueobjects.UserId;
 import com.partidoya.platform.shared.domain.exceptions.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -67,6 +72,20 @@ public class CourtsController {
     public ResponseEntity<List<CourtResource>> getManagedCourts(@PathVariable Long ownerId) {
         var courts = courtQueryService.handle(new GetManagedCourtsQuery(new UserId(ownerId)));
         var body = courts.stream().map(CourtResourceFromEntityAssembler::toResourceFromEntity).toList();
+        return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/managed/{ownerId}/reservations")
+    public ResponseEntity<List<ManagedReservationResource>> getManagedReservations(
+            @PathVariable Long ownerId,
+            @RequestParam(required = false) Long courtId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        var reservations = courtQueryService.handle(new GetManagedReservationsQuery(new UserId(ownerId),
+                courtId == null ? null : new CourtId(courtId), from, to));
+        var body = reservations.stream()
+                .map(ManagedReservationResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
         return ResponseEntity.ok(body);
     }
 

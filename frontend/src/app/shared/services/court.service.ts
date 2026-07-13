@@ -59,6 +59,23 @@ export interface ReservationResponse {
   createdAt: string;
 }
 
+export interface ManagedReservationResponse {
+  id: number;
+  userId: number;
+  customerName: string;
+  courtId: number;
+  courtName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  price: number;
+  currency: string;
+  providerReference: string | null;
+  status: string;
+  paymentStatus: string;
+  createdAt: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CourtService {
   private readonly apiUrl = `${environment.apiUrl}/courts`;
@@ -78,6 +95,17 @@ export class CourtService {
 
   getManagedCourts(ownerId: number): Observable<CourtResponse[]> {
     return this.http.get<CourtResponse[]>(`${this.apiUrl}/managed/${ownerId}`);
+  }
+
+  getManagedReservations(
+    ownerId: number,
+    from: string,
+    to: string,
+    courtId?: number
+  ): Observable<ManagedReservationResponse[]> {
+    let params = new HttpParams().set('from', from).set('to', to);
+    if (courtId) params = params.set('courtId', courtId);
+    return this.http.get<ManagedReservationResponse[]>(`${this.apiUrl}/managed/${ownerId}/reservations`, { params });
   }
 
   createCourt(request: SaveCourtRequest): Observable<CourtResponse> {

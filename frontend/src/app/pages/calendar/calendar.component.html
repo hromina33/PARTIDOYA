@@ -1,0 +1,215 @@
+<section class="calendar-page">
+  <div class="container">
+    <header class="calendar-header">
+      <div>
+        <span>Reservas de canchas</span>
+        <h1>Calendario y agenda</h1>
+        <p>Consulta tus reservas por cancha, fecha, horario y estado desde una sola vista.</p>
+      </div>
+      <button type="button" class="today-button" (click)="goToday()">Hoy</button>
+    </header>
+
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage }}</div>
+    }
+
+    <div class="calendar-toolbar">
+      <div class="period-actions" aria-label="Cambiar periodo">
+        <button type="button" (click)="movePeriod(-1)" aria-label="Periodo anterior">&lsaquo;</button>
+        <strong>{{ periodTitle }}</strong>
+        <button type="button" (click)="movePeriod(1)" aria-label="Periodo siguiente">&rsaquo;</button>
+      </div>
+
+      <div class="view-switch" aria-label="Cambiar vista">
+        <button type="button" [class.active]="viewMode === 'month'" (click)="setView('month')">Mes</button>
+        <button type="button" [class.active]="viewMode === 'week'" (click)="setView('week')">Semana</button>
+        <button type="button" [class.active]="viewMode === 'day'" (click)="setView('day')">Dia</button>
+      </div>
+
+      <label class="court-filter">
+        Cancha
+        <select [(ngModel)]="selectedCourtId" (change)="onCourtChange()">
+          <option value="all">Todas las canchas</option>
+          @for (court of courts; track court.id) {
+            <option [value]="court.id">{{ court.name }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    @if (loading) {
+      <div class="state-box">Cargando calendario...</div>
+    } @else if (courts.length === 0) {
+      <div class="state-box">Aun no tienes canchas registradas para mostrar reservas.</div>
+    } @else {
+      <div class="calendar-layout">
+        <main class="calendar-panel">
+          @if (calendarReservations.length === 0) {
+            <div class="empty-calendar">No hay reservas en el periodo seleccionado.</div>
+          }
+
+          @if (viewMode === 'month') {
+            <div class="month-calendar">
+              @for (dayName of weekDayNames; track dayName) {
+                <div class="month-weekday">{{ dayName }}</div>
+              }
+              @for (day of monthCells; track trackDay($index, day)) {
+                <button
+                  type="button"
+                  class="month-day"
+                  [class.muted]="!day.isCurrentMonth"
+                  [class.today]="day.isToday"
+                  (click)="currentDate = day.date; setView('day')">
+                  <span>{{ day.label }}</span>
+                  <div class="month-events">
+                    @for (reservation of reservationsForDate(day.date) | slice:0:3; track trackReservation($index, reservation)) {
+                      <div class="month-event" [style.--event-color]="courtColor(reservation.courtId)">
+                        {{ shortTime(reservation.startTime) }} {{ reservation.courtName }}
+                      </div>
+                    }
+                    @if (reservationsForDate(day.date).length > 3) {
+                      <small>+{{ reservationsForDate(day.date).length - 3 }} mas</small>
+                    }
+                  </div>
+                </button>
+              }
+            </div>
+          } @else {
+            <div class="schedule-wrap">
+              <div class="schedule-head" [style.gridTemplateColumns]="scheduleGridColumns">
+                <div class="time-head"></div>
+                @for (day of dayColumns; track trackDay($index, day)) {
+                  <div class="day-head" [class.today]="toIsoDate(day) === toIsoDate(currentDate)">
+                    {{ formatDayHeader(day) }}
+                  </div>
+                }
+              </div>
+
+              @for (slot of timeSlots; track slot) {
+                <div class="schedule-row" [style.gridTemplateColumns]="scheduleGridColumns">
+                  <div class="slot-label">{{ slot }}</div>
+                  @for (day of dayColumns; track trackDay($index, day)) {
+                    <div class="slot-cell">
+                      @for (reservation of reservationsForSlot(day, slot); track trackReservation($index, reservation)) {
+                        <button
+                          type="button"
+                          class="reservation-chip"
+                          [style.--event-color]="courtColor(reservation.courtId)"
+                          (click)="openReservation(reservation)">
+                          <strong>{{ reservation.courtName }}</strong>
+                          <span>{{ shortTime(reservation.startTime) }}-{{ shortTime(reservation.endTime) }}</span>
+                          <small>{{ statusLabel(reservation.status) }}</small>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </main>
+
+        <aside class="agenda-panel">
+          <div class="agenda-title">
+            <span>Agenda</span>
+            <strong>{{ agendaReservations.length }} proximas</strong>
+          </div>
+
+          <div class="agenda-filters">
+            <label>
+              Cancha
+              <select [(ngModel)]="agendaCourtId">
+                <option value="all">Todas</option>
+                @for (court of courts; track court.id) {
+                  <option [value]="court.id">{{ court.name }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              Fecha
+              <input type="date" [(ngModel)]="agendaDate">
+            </label>
+            <label>
+              Reserva
+              <select [(ngModel)]="agendaStatus">
+                <option value="all">Todos los estados</option>
+                @for (status of statusOptions; track status) {
+                  <option [value]="status">{{ statusLabel(status) }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              Pago
+              <select [(ngModel)]="agendaPaymentStatus">
+                <option value="all">Todos los pagos</option>
+                @for (status of paymentStatusOptions; track status) {
+                  <option [value]="status">{{ statusLabel(status) }}</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          <div class="agenda-list">
+            @if (agendaReservations.length === 0) {
+              <div class="agenda-empty">Sin reservas con estos filtros.</div>
+            } @else {
+              @for (reservation of agendaReservations; track trackReservation($index, reservation)) {
+                <button type="button" class="agenda-item" (click)="openReservation(reservation)">
+                  <span class="agenda-dot" [style.background]="courtColor(reservation.courtId)"></span>
+                  <span>
+                    <strong>{{ reservation.courtName }}</strong>
+                    <small>{{ formatFullDate(reservation.date) }} &middot; {{ shortTime(reservation.startTime) }}-{{ shortTime(reservation.endTime) }}</small>
+                  </span>
+                  <em>{{ statusLabel(reservation.paymentStatus) }}</em>
+                </button>
+              }
+            }
+          </div>
+        </aside>
+      </div>
+    }
+  </div>
+</section>
+
+@if (selectedReservation) {
+  <div class="reservation-modal" role="dialog" aria-modal="true" aria-label="Detalle de reserva" (click)="closeReservation()">
+    <article class="reservation-detail" (click)="$event.stopPropagation()">
+      <button type="button" class="close-button" (click)="closeReservation()" aria-label="Cerrar">&times;</button>
+      <span class="detail-kicker">Detalle de reserva</span>
+      <h2>{{ selectedReservation.courtName }}</h2>
+
+      <dl>
+        <div>
+          <dt>Cliente</dt>
+          <dd>{{ selectedReservation.customerName }}</dd>
+        </div>
+        <div>
+          <dt>Fecha</dt>
+          <dd>{{ formatFullDate(selectedReservation.date) }}</dd>
+        </div>
+        <div>
+          <dt>Horario</dt>
+          <dd>{{ shortTime(selectedReservation.startTime) }}-{{ shortTime(selectedReservation.endTime) }}</dd>
+        </div>
+        <div>
+          <dt>Estado</dt>
+          <dd>{{ statusLabel(selectedReservation.status) }}</dd>
+        </div>
+        <div>
+          <dt>Pago</dt>
+          <dd>{{ statusLabel(selectedReservation.paymentStatus) }}</dd>
+        </div>
+        <div>
+          <dt>Monto</dt>
+          <dd>{{ selectedReservation.currency }} {{ selectedReservation.price | number:'1.2-2' }}</dd>
+        </div>
+        @if (selectedReservation.providerReference) {
+          <div>
+            <dt>Referencia</dt>
+            <dd>{{ selectedReservation.providerReference }}</dd>
+          </div>
+        }
+      </dl>
+    </article>
+  </div>
+}
