@@ -9,11 +9,13 @@ import com.partidoya.platform.courts.domain.repositories.CourtRepository;
 import com.partidoya.platform.iam.domain.repositories.UserRepository;
 import com.partidoya.platform.iam.domain.services.PlanPolicy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true)
 public class CourtQueryServiceImpl implements CourtQueryService {
     private final CourtRepository courtRepository;
     private final UserRepository userRepository;
