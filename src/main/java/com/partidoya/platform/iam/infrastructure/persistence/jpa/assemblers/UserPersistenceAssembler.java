@@ -25,7 +25,7 @@ public final class UserPersistenceAssembler {
                 entity.isEmailVerified(),
                 Role.valueOf(entity.getRole()),
                 Plan.valueOf(entity.getPlan()),
-                entity.getStatus() == null ? UserStatus.ACTIVE : UserStatus.valueOf(entity.getStatus()),
+                entity.getStatus() == null || entity.getStatus().isBlank() ? UserStatus.ACTIVE : UserStatus.valueOf(entity.getStatus()),
                 entity.getSuspensionReason(),
                 entity.getSuspendedUntil(),
                 entity.getLastAdministrativeActionAt(),
