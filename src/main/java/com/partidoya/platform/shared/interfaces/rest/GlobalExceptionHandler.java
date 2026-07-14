@@ -4,6 +4,8 @@ import com.partidoya.platform.shared.domain.exceptions.ForbiddenActionException;
 import com.partidoya.platform.shared.domain.exceptions.ResourceConflictException;
 import com.partidoya.platform.shared.domain.exceptions.ResourceNotFoundException;
 import com.partidoya.platform.shared.interfaces.rest.resources.ErrorResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResource> handleNotFound(ResourceNotFoundException ex) {
@@ -39,6 +42,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResource> handleUnexpected(Exception ex) {
-        return new ResponseEntity<>(new ErrorResource("UNEXPECTED_ERROR", "Ha ocurrido un error inesperado. Intenta de nuevo más tarde."), HttpStatus.INTERNAL_SERVER_ERROR);
+        log.error("Unexpected error handling request", ex);
+        var cause = ex.getCause();
+        var detail = "DEBUG_TEMP " + ex.getClass().getSimpleName() + ": " + ex.getMessage()
+                + (cause != null ? " | cause: " + cause.getClass().getSimpleName() + ": " + cause.getMessage() : "");
+        return new ResponseEntity<>(new ErrorResource("UNEXPECTED_ERROR", detail), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
