@@ -39,6 +39,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResource> handleUnexpected(Exception ex) {
-        return new ResponseEntity<>(new ErrorResource("UNEXPECTED_ERROR", ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(new ErrorResource("UNEXPECTED_ERROR", "Ha ocurrido un error inesperado. Intenta de nuevo más tarde."), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
